@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monster Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/style.css" />
+  </head>
+  <body>
+    <header class="header" role="banner">
+      <h1 class="header__title">MONSTER GENERATOR</h1>
+    </header>
+
+    <main class="main" role="main">
+      <aside class="picker" aria-label="Monsterteile auswählen">
+        <div class="picker__tabs" id="categoryTabs" role="tablist"></div>
+        <button type="button" class="picker__random" id="randomBtnPicker" aria-label="Zufälliges Monster erstellen">Zufall</button>
+        <div class="picker__grid" id="partsGrid"></div>
+      </aside>
+      <section class="preview" aria-label="Monster-Vorschau">
+        <div class="preview__canvas-wrap">
+          <div class="preview__frame">
+            <canvas id="previewCanvas" width="400" height="400" aria-label="Zusammengesetztes Monster"></canvas>
+          </div>
+        </div>
+        <div id="scalerPanel" class="scaler-panel" hidden aria-label="Größe, Drehung und Spiegelung des ausgewählten Teils">
+          <p class="scaler-panel__title">Ausgewähltes Teil</p>
+          <label class="scaler-panel__label">Größe <span id="scaleValue">100</span>% (50–400)</label>
+          <input type="range" id="scaleSlider" class="scaler-panel__slider" min="50" max="400" value="100" step="5" aria-label="Größe" />
+          <label class="scaler-panel__label">Drehung <span id="rotationValue">0</span>°</label>
+          <input type="range" id="rotationSlider" class="scaler-panel__slider" min="0" max="360" value="0" step="5" aria-label="Drehung" />
+          <div class="scaler-panel__mirror">
+            <button type="button" id="mirrorHBtn" class="preview__btn preview__btn--small" aria-label="Horizontal spiegeln">↔ Horizontal</button>
+            <button type="button" id="mirrorVBtn" class="preview__btn preview__btn--small" aria-label="Vertikal spiegeln">↕ Vertikal</button>
+          </div>
+          <button type="button" id="trashBtn" class="preview__btn preview__btn--trash" disabled aria-label="Ausgewähltes Teil löschen" title="Ausgewähltes Teil vom Canvas entfernen">
+            <svg class="btn-trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Teil löschen
+          </button>
+        </div>
+        <div class="preview__actions">
+          <button type="button" class="preview__btn preview__btn--random" id="randomBtn">Zufälliges Monster</button>
+          <button type="button" class="preview__export" id="exportBtn">Als PNG herunterladen</button>
+        </div>
+        <div class="preview__presets" aria-label="Presets">
+          <div class="presets__save">
+            <label for="presetName" class="presets__label">Preset-Name</label>
+            <input type="text" id="presetName" class="presets__input" placeholder="z. B. Blau" maxlength="30" />
+            <button type="button" class="preview__btn" id="savePresetBtn">Preset speichern</button>
+          </div>
+          <div class="presets__load">
+            <label for="presetSelect" class="presets__label">Gespeicherte Presets</label>
+            <select id="presetSelect" class="presets__select" aria-label="Preset auswählen">
+              <option value="">– auswählen –</option>
+            </select>
+            <div class="presets__load-btns">
+              <button type="button" class="preview__btn" id="loadPresetBtn">Preset laden</button>
+              <button type="button" class="preview__btn preview__btn--secondary" id="deletePresetBtn">Preset löschen</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="preview__btn preview__btn--secondary" id="resetBtn">Zurücksetzen</button>
+      </section>
+    </main>
+    <div id="liveRegion" class="live-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
