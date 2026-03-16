@@ -40,6 +40,15 @@ export class EmberParticles {
       this.canvas.style.display = 'none';
       return;
     }
+
+    // Pause when tab is hidden (battery saving)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.stop();
+      } else if (this._shouldBeRunning) {
+        this.start();
+      }
+    });
   }
 
   resize() {
@@ -79,11 +88,13 @@ export class EmberParticles {
 
   start() {
     if (this.isRunning || this.prefersReducedMotion || this.isMobile) return;
+    this._shouldBeRunning = true;
     this.isRunning = true;
     this.animate();
   }
 
   stop() {
+    this._shouldBeRunning = false;
     this.isRunning = false;
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);

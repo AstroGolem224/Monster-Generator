@@ -45,276 +45,212 @@ export const initialState = {
 };
 
 /**
- * Root reducer combining all domain reducers
- * @param {MonsterGeneratorState} state
+ * Root reducer that works with Immer
+ * Each domain reducer directly mutates the draft
+ * @param {MonsterGeneratorState} draft
  * @param {Object} action
- * @returns {MonsterGeneratorState}
  */
-export function rootReducer(state = initialState, action) {
-  return {
-    scene: sceneReducer(state.scene, action),
-    ui: uiReducer(state.ui, action),
-    presets: presetsReducer(state.presets, action),
-    assets: assetsReducer(state.assets, action)
-  };
+export function rootReducer(draft, action) {
+  // Scene reducer
+  sceneReducer(draft.scene, action);
+  
+  // UI reducer
+  uiReducer(draft.ui, action);
+  
+  // Presets reducer
+  presetsReducer(draft.presets, action);
+  
+  // Assets reducer
+  assetsReducer(draft.assets, action);
 }
 
 /**
- * Scene domain reducer
- * @param {MonsterGeneratorState['scene']} state
+ * Scene domain reducer - mutates draft directly (Immer)
+ * @param {MonsterGeneratorState['scene']} draft
  * @param {Object} action
- * @returns {MonsterGeneratorState['scene']}
  */
-function sceneReducer(state, action) {
+function sceneReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.SCENE_ITEM_ADD: {
       const newItem = createPlacedItem(action.payload);
-      return {
-        ...state,
-        placedItems: [...state.placedItems, newItem],
-        selectedItemId: newItem.id
-      };
+      draft.placedItems.push(newItem);
+      draft.selectedItemId = newItem.id;
+      break;
     }
 
     case ActionTypes.SCENE_ITEM_REMOVE: {
       const { id } = action.payload;
-      return {
-        ...state,
-        placedItems: state.placedItems.filter(item => item.id !== id),
-        selectedItemId: state.selectedItemId === id ? null : state.selectedItemId
-      };
+      const index = draft.placedItems.findIndex(item => item.id === id);
+      if (index !== -1) {
+        draft.placedItems.splice(index, 1);
+      }
+      if (draft.selectedItemId === id) {
+        draft.selectedItemId = null;
+      }
+      break;
     }
 
     case ActionTypes.SCENE_ITEM_UPDATE: {
       const { id, updates } = action.payload;
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id ? updatePlacedItem(item, updates) : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        Object.assign(item, updates);
+      }
+      break;
     }
 
     case ActionTypes.SCENE_ITEM_SELECT: {
-      return {
-        ...state,
-        selectedItemId: action.payload.id
-      };
+      draft.selectedItemId = action.payload.id;
+      break;
     }
 
     case ActionTypes.SCENE_ITEM_MOVE: {
       const { id, position } = action.payload;
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id 
-            ? updatePlacedItem(item, { 
-                x: Math.max(0, Math.min(1, position.x)),
-                y: Math.max(0, Math.min(1, position.y))
-              })
-            : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        item.x = Math.max(0, Math.min(1, position.x));
+        item.y = Math.max(0, Math.min(1, position.y));
+      }
+      break;
     }
 
     case ActionTypes.TRANSFORM_SCALE: {
       const { id, scale } = action.payload;
-      const clampedScale = Math.max(0.5, Math.min(4.0, scale));
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id ? updatePlacedItem(item, { scale: clampedScale }) : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        item.scale = Math.max(0.5, Math.min(4.0, scale));
+      }
+      break;
     }
 
     case ActionTypes.TRANSFORM_ROTATE: {
       const { id, rotation } = action.payload;
-      const normalizedRotation = ((rotation % 360) + 360) % 360;
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id ? updatePlacedItem(item, { rotation: normalizedRotation }) : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        item.rotation = ((rotation % 360) + 360) % 360;
+      }
+      break;
     }
 
     case ActionTypes.TRANSFORM_FLIP_H: {
       const { id } = action.payload;
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id ? updatePlacedItem(item, { flipH: !item.flipH }) : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        item.flipH = !item.flipH;
+      }
+      break;
     }
 
     case ActionTypes.TRANSFORM_FLIP_V: {
       const { id } = action.payload;
-      return {
-        ...state,
-        placedItems: state.placedItems.map(item =>
-          item.id === id ? updatePlacedItem(item, { flipV: !item.flipV }) : item
-        )
-      };
+      const item = draft.placedItems.find(item => item.id === id);
+      if (item) {
+        item.flipV = !item.flipV;
+      }
+      break;
     }
 
     case ActionTypes.SCENE_CLEAR:
-      return {
-        ...state,
-        placedItems: [],
-        selectedItemId: null
-      };
+      draft.placedItems = [];
+      draft.selectedItemId = null;
+      break;
 
     case ActionTypes.SCENE_LOAD:
     case ActionTypes.PRESET_LOAD:
       const { items } = action.payload;
-      return {
-        ...state,
-        placedItems: Array.isArray(items) ? items.map(item => createPlacedItem(item)) : [],
-        selectedItemId: null
-      };
-
-    default:
-      return state;
+      draft.placedItems = Array.isArray(items) 
+        ? items.map(item => createPlacedItem(item))
+        : [];
+      draft.selectedItemId = null;
+      break;
   }
 }
 
 /**
- * UI domain reducer
- * @param {MonsterGeneratorState['ui']} state
+ * UI domain reducer - mutates draft directly (Immer)
+ * @param {MonsterGeneratorState['ui']} draft
  * @param {Object} action
- * @returns {MonsterGeneratorState['ui']}
  */
-function uiReducer(state, action) {
+function uiReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.UI_CATEGORY_SELECT:
-      return {
-        ...state,
-        activeCategoryId: action.payload.categoryId
-      };
+      draft.activeCategoryId = action.payload.categoryId;
+      break;
 
     case ActionTypes.UI_PANEL_TOGGLE:
       const { panelId, isOpen } = action.payload;
-      return {
-        ...state,
-        panels: {
-          ...state.panels,
-          [panelId]: isOpen
-        }
-      };
+      draft.panels[panelId] = isOpen;
+      break;
 
     case ActionTypes.UI_ANNOUNCE:
       const { message, timestamp } = action.payload;
-      return {
-        ...state,
-        announcement: message,
-        announcementTimestamp: timestamp
-      };
+      draft.announcement = message;
+      draft.announcementTimestamp = timestamp;
+      break;
 
     case ActionTypes.SCENE_ITEM_SELECT:
-      return {
-        ...state,
-        panels: {
-          ...state.panels,
-          scaler: action.payload.id !== null
-        }
-      };
-
-    default:
-      return state;
+      draft.panels.scaler = action.payload.id !== null;
+      break;
   }
 }
 
 /**
- * Presets domain reducer
- * @param {MonsterGeneratorState['presets']} state
+ * Presets domain reducer - mutates draft directly (Immer)
+ * @param {MonsterGeneratorState['presets']} draft
  * @param {Object} action
- * @returns {MonsterGeneratorState['presets']}
  */
-function presetsReducer(state, action) {
+function presetsReducer(draft, action) {
   const MAX_PRESETS = 10;
 
   switch (action.type) {
     case ActionTypes.PRESET_SAVE: {
       const { name, items, createdAt } = action.payload;
-      const existingIndex = state.items.findIndex(p => p.name === name);
+      const existingIndex = draft.items.findIndex(p => p.name === name);
       
-      let newItems;
       if (existingIndex >= 0) {
         // Update existing
-        newItems = state.items.map((p, i) => 
-          i === existingIndex ? { name, items, createdAt } : p
-        );
+        draft.items[existingIndex] = { name, items, createdAt };
       } else {
         // Add new, limit to MAX_PRESETS
-        newItems = [...state.items, { name, items, createdAt }];
-        if (newItems.length > MAX_PRESETS) {
-          newItems = newItems.slice(newItems.length - MAX_PRESETS);
+        draft.items.push({ name, items, createdAt });
+        if (draft.items.length > MAX_PRESETS) {
+          draft.items.shift();
         }
       }
-      
-      return {
-        ...state,
-        items: newItems
-      };
+      break;
     }
 
     case ActionTypes.PRESET_DELETE: {
       const { name } = action.payload;
-      return {
-        ...state,
-        items: state.items.filter(p => p.name !== name)
-      };
+      const index = draft.items.findIndex(p => p.name === name);
+      if (index !== -1) {
+        draft.items.splice(index, 1);
+      }
+      break;
     }
-
-    default:
-      return state;
   }
 }
 
 /**
- * Assets domain reducer
- * @param {MonsterGeneratorState['assets']} state
+ * Assets domain reducer - mutates draft directly (Immer)
+ * @param {MonsterGeneratorState['assets']} draft
  * @param {Object} action
- * @returns {MonsterGeneratorState['assets']}
  */
-function assetsReducer(state, action) {
+function assetsReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.ASSET_LOAD_START:
-      return {
-        ...state,
-        status: {
-          ...state.status,
-          [action.payload.url]: 'loading'
-        }
-      };
+      draft.status[action.payload.url] = 'loading';
+      break;
 
     case ActionTypes.ASSET_LOAD_SUCCESS:
       const { url: successUrl, image } = action.payload;
-      return {
-        ...state,
-        status: {
-          ...state.status,
-          [successUrl]: 'loaded'
-        },
-        cache: {
-          ...state.cache,
-          [successUrl]: image
-        }
-      };
+      draft.status[successUrl] = 'loaded';
+      draft.cache[successUrl] = image;
+      break;
 
     case ActionTypes.ASSET_LOAD_ERROR:
       const { url: errorUrl } = action.payload;
-      return {
-        ...state,
-        status: {
-          ...state.status,
-          [errorUrl]: 'error'
-        }
-      };
-
-    default:
-      return state;
+      draft.status[errorUrl] = 'error';
+      break;
   }
 }

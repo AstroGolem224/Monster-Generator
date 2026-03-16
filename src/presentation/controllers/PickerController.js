@@ -80,8 +80,13 @@ export class PickerController {
       `;
     }).join('');
 
-    // Load images after rendering with glow effect
-    this._loadThumbnails(parts);
+    // Load images after rendering with glow effect (using requestIdleCallback for performance)
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => this._loadThumbnails(parts), { timeout: 2000 });
+    } else {
+      // Fallback for Safari
+      setTimeout(() => this._loadThumbnails(parts), 100);
+    }
   }
 
   async _loadThumbnails(parts) {

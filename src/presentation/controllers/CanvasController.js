@@ -37,6 +37,12 @@ export class CanvasController {
     this.canvas.width = PREVIEW_SIZE;
     this.canvas.height = PREVIEW_SIZE;
 
+    // Create offscreen canvas for double buffering
+    this._offscreenCanvas = document.createElement('canvas');
+    this._offscreenCanvas.width = PREVIEW_SIZE;
+    this._offscreenCanvas.height = PREVIEW_SIZE;
+    this._offscreenCtx = this._offscreenCanvas.getContext('2d');
+
     this._setupEventListeners();
     this._subscribeToState();
     
@@ -147,105 +153,118 @@ export class CanvasController {
     const items = this.store.select(state => state.scene.placedItems);
     const selectedId = this.store.select(state => state.scene.selectedItemId);
     
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // Clear offscreen canvas
+    this._offscreenCtx.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
     
     // Draw empty placeholder
     if (!items || items.length === 0) {
-      this._drawEmptyPlaceholder();
+      this._drawEmptyPlaceholder(this._offscreenCtx);
+      // Copy to main canvas
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.drawImage(this._offscreenCanvas, 0, 0);
       return;
     }
 
     const baseHalf = (PREVIEW_SIZE * BASE_SIZE_RATIO) / 2;
 
-    // Preload missing images
-    const urls = items.map(item => item.assetUrl);
-    await assetLoader.preload(urls);
+    // Preload missing images (only uncached ones)
+    const uncachedUrls = items
+      .map(item => item.assetUrl)
+      .filter(url => !assetLoader.isCached(url));
+    
+    if (uncachedUrls.length > 0) {
+      await assetLoader.preload(uncachedUrls);
+    }
 
-    // Draw each item
+    // Draw each item to offscreen canvas
     for (const item of items) {
       const cx = item.x * PREVIEW_SIZE;
       const cy = item.y * PREVIEW_SIZE;
       const img = assetLoader.getCached(item.assetUrl);
       
-      this._drawItem(item, cx, cy, baseHalf, img, item.id === selectedId);
+      this._drawItem(this._offscreenCtx, item, cx, cy, baseHalf, img, item.id === selectedId);
     }
+
+    // Copy offscreen to main canvas in one operation
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this._offscreenCanvas, 0, 0);
   }
 
-  _drawItem(item, cx, cy, baseHalf, img, isSelected) {
+  _drawItem(ctx, item, cx, cy, baseHalf, img, isSelected) {
     const size = 2 * baseHalf * item.scale;
     const half = size / 2;
     
-    this.ctx.save();
-    this.ctx.translate(cx, cy);
-    this.ctx.rotate((item.rotation * Math.PI) / 180);
-    this.ctx.translate(-half, -half);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((item.rotation * Math.PI) / 180);
+    ctx.translate(-half, -half);
     
     // Apply flipping
     if (item.flipH || item.flipV) {
-      this.ctx.translate(half, half);
-      this.ctx.scale(item.flipH ? -1 : 1, item.flipV ? -1 : 1);
-      this.ctx.translate(-half, -half);
+      ctx.translate(half, half);
+      ctx.scale(item.flipH ? -1 : 1, item.flipV ? -1 : 1);
+      ctx.translate(-half, -half);
     }
     
     if (img) {
-      this.ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, size, size);
+      ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, size, size);
     } else {
       // Draw placeholder
-      this._drawPlaceholder(half, half, half, item.color);
+      this._drawPlaceholder(ctx, half, half, half, item.color);
     }
     
     // Selection highlight — Ember glow effect
     if (isSelected) {
       // Outer glow
-      this.ctx.shadowColor = '#d4520a';
-      this.ctx.shadowBlur = 20;
-      this.ctx.strokeStyle = '#ff7b2e';
-      this.ctx.lineWidth = 2;
-      this.ctx.strokeRect(-2, -2, size + 4, size + 4);
+      ctx.shadowColor = '#d4520a';
+      ctx.shadowBlur = 20;
+      ctx.strokeStyle = '#ff7b2e';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-2, -2, size + 4, size + 4);
       
       // Reset shadow
-      this.ctx.shadowBlur = 0;
+      ctx.shadowBlur = 0;
       
       // Inner highlight
-      this.ctx.strokeStyle = 'rgba(255, 123, 46, 0.5)';
-      this.ctx.lineWidth = 1;
-      this.ctx.strokeRect(2, 2, size - 4, size - 4);
+      ctx.strokeStyle = 'rgba(255, 123, 46, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(2, 2, size - 4, size - 4);
     }
     
-    this.ctx.restore();
+    ctx.restore();
   }
 
-  _drawPlaceholder(x, y, radius, color) {
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
-    this.ctx.fillStyle = color;
-    this.ctx.fill();
-    this.ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    this.ctx.lineWidth = Math.max(2, radius * 0.08);
-    this.ctx.stroke();
+  _drawPlaceholder(ctx, x, y, radius, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = Math.max(2, radius * 0.08);
+    ctx.stroke();
   }
 
-  _drawEmptyPlaceholder() {
+  _drawEmptyPlaceholder(ctx) {
     const center = PREVIEW_SIZE / 2;
     const radius = PREVIEW_SIZE * 0.25;
     
     // Ember-colored placeholder with glow
-    this.ctx.shadowColor = '#d4520a';
-    this.ctx.shadowBlur = 30;
-    this.ctx.fillStyle = 'rgba(212, 82, 10, 0.1)';
-    this.ctx.beginPath();
-    this.ctx.arc(center, center, radius, 0, Math.PI * 2);
-    this.ctx.fill();
+    ctx.shadowColor = '#d4520a';
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = 'rgba(212, 82, 10, 0.1)';
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.fill();
     
     // Reset shadow
-    this.ctx.shadowBlur = 0;
+    ctx.shadowBlur = 0;
     
     // Inner ring
-    this.ctx.strokeStyle = 'rgba(212, 82, 10, 0.3)';
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.arc(center, center, radius * 0.7, 0, Math.PI * 2);
-    this.ctx.stroke();
+    ctx.strokeStyle = 'rgba(212, 82, 10, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(center, center, radius * 0.7, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   _handleDrop(e) {

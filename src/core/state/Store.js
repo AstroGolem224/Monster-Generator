@@ -1,15 +1,44 @@
 /**
  * Central State Store with Observable Pattern
- * Implements unidirectional data flow
+ * Implements unidirectional data flow with Immer for structural sharing
  * @template T
  */
+
+import { produce, current, isDraft } from 'immer';
+
+/**
+ * Shallow equality check for objects/arrays
+ * Much faster than JSON.stringify for simple comparisons
+ * @param {*} a
+ * @param {*} b
+ * @returns {boolean}
+ */
+function shallowEqual(a, b) {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  if (a === null || b === null) return false;
+  
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  
+  if (keysA.length !== keysB.length) return false;
+  
+  for (const key of keysA) {
+    if (!keysB.includes(key) || a[key] !== b[key]) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
 export class Store {
   /**
    * @param {T} initialState
    */
   constructor(initialState = {}) {
     /** @type {T} */
-    this._state = Object.freeze(this._deepClone(initialState));
+    this._state = Object.freeze(initialState);
     /** @type {Set<(state: T, prevState: T) => void>} */
     this._subscribers = new Set();
     /** @type {Array<{ state: T, timestamp: number }>} */
@@ -20,6 +49,10 @@ export class Store {
     this._isBatching = false;
     /** @type {Array<() => void>} */
     this._batchQueue = [];
+    /** @type {Map<string, *>} */
+    this._selectorCache = new Map();
+    /** @type {Map<string, number>} */
+    this._selectorCacheHits = new Map();
   }
 
   /**
@@ -37,16 +70,19 @@ export class Store {
    */
   subscribe(callback) {
     this._subscribers.add(callback);
+    
     // Return unsubscribe function
-    return () => this._subscribers.delete(callback);
+    return () => {
+      this._subscribers.delete(callback);
+    };
   }
 
   /**
-   * Dispatch action to update state
+   * Dispatch action to update state using Immer for structural sharing
    * @param {Object} action
    * @param {string} action.type
    * @param {*} [action.payload]
-   * @param {Object.<string, (state: T, payload: *) => T>} reducers
+   * @param {Object.<string, (draft: T, payload: *) => void>} reducers
    */
   dispatch(action, reducers) {
     const prevState = this._state;
@@ -57,13 +93,19 @@ export class Store {
       return;
     }
 
-    const newState = reducer(prevState, action.payload);
+    // Use Immer for immutable updates with structural sharing
+    const newState = produce(prevState, (draft) => {
+      reducer(draft, action.payload);
+    });
     
-    // Only update if state actually changed
+    // Only update if state actually changed (shallow check first)
     if (!this._isEqual(prevState, newState)) {
-      this._state = Object.freeze(this._deepClone(newState));
+      this._state = Object.freeze(newState);
       this._notify(prevState);
       this._addToHistory(prevState);
+      
+      // Clear selector cache on state change
+      this._selectorCache.clear();
     }
   }
 
@@ -77,19 +119,47 @@ export class Store {
       callback();
     } finally {
       this._isBatching = false;
-      // Notify subscribers once after batch
       this._notify(this._state);
     }
   }
 
   /**
-   * Select a slice of state
+   * Select a slice of state with memoization
    * @template K
    * @param {(state: T) => K} selector
    * @returns {K}
    */
   select(selector) {
-    return selector(this._state);
+    // Create cache key from selector function string
+    const cacheKey = selector.toString();
+    
+    // Check cache first
+    if (this._selectorCache.has(cacheKey)) {
+      this._selectorCacheHits.set(cacheKey, (this._selectorCacheHits.get(cacheKey) || 0) + 1);
+      return this._selectorCache.get(cacheKey);
+    }
+    
+    // Compute and cache result
+    const result = selector(this._state);
+    this._selectorCache.set(cacheKey, result);
+    return result;
+  }
+
+  /**
+   * Get selector cache statistics
+   * @returns {{ size: number, hits: Object.<string, number> }}
+   */
+  getSelectorStats() {
+    const hits = {};
+    this._selectorCacheHits.forEach((count, key) => {
+      // Truncate key for readability
+      const shortKey = key.substring(0, 50) + '...';
+      hits[shortKey] = count;
+    });
+    return {
+      size: this._selectorCache.size,
+      hits
+    };
   }
 
   /**
@@ -111,8 +181,9 @@ export class Store {
     const prevState = this._state;
     this._historyPosition--;
     const historyEntry = this._history[this._historyPosition];
-    this._state = Object.freeze(this._deepClone(historyEntry.state));
+    this._state = Object.freeze(historyEntry.state);
     this._notify(prevState);
+    this._selectorCache.clear();
     return true;
   }
 
@@ -126,8 +197,9 @@ export class Store {
     const prevState = this._state;
     this._historyPosition++;
     const historyEntry = this._history[this._historyPosition];
-    this._state = Object.freeze(this._deepClone(historyEntry.state));
+    this._state = Object.freeze(historyEntry.state);
     this._notify(prevState);
+    this._selectorCache.clear();
     return true;
   }
 
@@ -138,12 +210,19 @@ export class Store {
   _notify(prevState) {
     if (this._isBatching) return;
     
-    this._subscribers.forEach(callback => {
-      try {
-        callback(this._state, prevState);
-      } catch (error) {
-        console.error('[Store] Subscriber error:', error);
-      }
+    // Use setTimeout(0) to batch notifications and prevent stack overflow
+    if (this._notificationScheduled) return;
+    this._notificationScheduled = true;
+    
+    Promise.resolve().then(() => {
+      this._notificationScheduled = false;
+      this._subscribers.forEach(callback => {
+        try {
+          callback(this._state, prevState);
+        } catch (error) {
+          console.error('[Store] Subscriber error:', error);
+        }
+      });
     });
   }
 
@@ -159,8 +238,9 @@ export class Store {
       this._history = this._history.slice(0, this._historyPosition + 1);
     }
     
+    // Store reference (state is already immutable)
     this._history.push({
-      state: this._deepClone(state),
+      state: state,
       timestamp: Date.now()
     });
     
@@ -173,31 +253,57 @@ export class Store {
   }
 
   /**
-   * @private
-   * @param {*} obj
-   * @returns {*}
-   */
-  _deepClone(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    if (obj instanceof Date) return new Date(obj.getTime());
-    if (Array.isArray(obj)) return obj.map(item => this._deepClone(item));
-    
-    const cloned = {};
-    for (const key of Object.keys(obj)) {
-      cloned[key] = this._deepClone(obj[key]);
-    }
-    return cloned;
-  }
-
-  /**
+   * Fast equality check using shallow comparison first
    * @private
    * @param {*} a
    * @param {*} b
    * @returns {boolean}
    */
   _isEqual(a, b) {
-    return JSON.stringify(a) === JSON.stringify(b);
+    // Fast path: reference equality
+    if (a === b) return true;
+    
+    // Shallow comparison for objects/arrays
+    if (typeof a === 'object' && typeof b === 'object') {
+      return shallowEqual(a, b);
+    }
+    
+    return false;
   }
+}
+
+/**
+ * Create a memoized selector
+ * Usage: const selectItems = createSelector(
+ *   [state => state.scene.placedItems],
+ *   (items) => items
+ * );
+ * 
+ * @template T, R
+ * @param {Array<(state: T) => *>} inputSelectors
+ * @param {(...args: Array<*>) => R} resultFn
+ * @returns {(state: T) => R}
+ */
+export function createSelector(inputSelectors, resultFn) {
+  let lastArgs = [];
+  let lastResult;
+  let hasCache = false;
+  
+  return (state) => {
+    const args = inputSelectors.map(selector => selector(state));
+    
+    // Check if inputs changed (shallow comparison)
+    const inputsChanged = !hasCache || args.length !== lastArgs.length || 
+      args.some((arg, index) => arg !== lastArgs[index]);
+    
+    if (inputsChanged) {
+      lastArgs = args;
+      lastResult = resultFn(...args);
+      hasCache = true;
+    }
+    
+    return lastResult;
+  };
 }
 
 /**
@@ -211,13 +317,16 @@ export function createDerivedStore(parentStore, selector) {
   const initialSlice = selector(parentStore.getState());
   const derivedStore = new Store(initialSlice);
   
+  let lastSelectedState = initialSlice;
+  
   parentStore.subscribe((newState) => {
     const newSlice = selector(newState);
-    const prevSlice = derivedStore.getState();
     
-    if (JSON.stringify(prevSlice) !== JSON.stringify(newSlice)) {
-      derivedStore._state = Object.freeze(derivedStore._deepClone(newSlice));
-      derivedStore._notify(prevSlice);
+    // Only update if selected slice actually changed
+    if (newSlice !== lastSelectedState) {
+      lastSelectedState = newSlice;
+      derivedStore._state = Object.freeze(newSlice);
+      derivedStore._notify(derivedStore._state);
     }
   });
   
