@@ -5,11 +5,13 @@
 import { assetLoader } from '../../infrastructure/assets/AssetLoader.js';
 import { PREVIEW_SIZE, BASE_SIZE_RATIO } from '../../config/constants.js';
 import { Actions } from '../../core/state/actions.js';
+import { emberParticles } from '../effects/EmberParticles.js';
 
 export class CanvasController {
-  constructor(store, sceneService) {
+  constructor(store, sceneService, reducers) {
     this.store = store;
     this.sceneService = sceneService;
+    this.reducers = reducers;
     
     this.canvas = document.getElementById('previewCanvas');
     this.ctx = this.canvas?.getContext('2d');
@@ -18,6 +20,11 @@ export class CanvasController {
     this.isDragging = false;
     this.draggedItemId = null;
     this.renderPending = false;
+    
+    // Bound event handlers for cleanup
+    this._boundMouseMove = this._handleMouseMove.bind(this);
+    this._boundMouseUp = this._handleMouseUp.bind(this);
+    this._boundUnsubscribe = null;
   }
 
   async init() {
@@ -33,24 +40,24 @@ export class CanvasController {
     this._setupEventListeners();
     this._subscribeToState();
     
+    // Start particle system
+    emberParticles.start();
+    
     // Initial render
     this._scheduleRender();
   }
 
   _setupEventListeners() {
     // Drop handling
-    this.canvas.addEventListener('dragover', (e) => {
+    this._boundDragOver = (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
-    });
-
-    this.canvas.addEventListener('drop', (e) => {
+    };
+    this._boundDrop = (e) => {
       e.preventDefault();
       this._handleDrop(e);
-    });
-
-    // Mouse interactions
-    this.canvas.addEventListener('mousedown', (e) => {
+    };
+    this._boundMouseDown = (e) => {
       const pos = this._getCanvasPoint(e);
       const hitItem = this._hitTest(pos.x, pos.y);
       
@@ -61,27 +68,61 @@ export class CanvasController {
       } else {
         this.sceneService.selectItem(null);
       }
-    });
+    };
 
-    window.addEventListener('mousemove', (e) => {
-      if (!this.isDragging || !this.draggedItemId) return;
-      
-      const pos = this._getCanvasPoint(e);
-      const normPos = this._pixelToNormalized(pos.x, pos.y);
-      
-      this.sceneService.moveItem(this.draggedItemId, normPos);
-    });
+    this.canvas.addEventListener('dragover', this._boundDragOver);
+    this.canvas.addEventListener('drop', this._boundDrop);
+    this.canvas.addEventListener('mousedown', this._boundMouseDown);
 
-    window.addEventListener('mouseup', () => {
-      if (this.isDragging) {
-        this.isDragging = false;
-        this.draggedItemId = null;
-      }
-    });
+    // Window events (need cleanup)
+    window.addEventListener('mousemove', this._boundMouseMove);
+    window.addEventListener('mouseup', this._boundMouseUp);
+  }
+
+  _handleMouseMove(e) {
+    if (!this.isDragging || !this.draggedItemId) return;
+    
+    const pos = this._getCanvasPoint(e);
+    const normPos = this._pixelToNormalized(pos.x, pos.y);
+    
+    this.sceneService.moveItem(this.draggedItemId, normPos);
+  }
+
+  _handleMouseUp() {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.draggedItemId = null;
+    }
+  }
+
+  /**
+   * Cleanup method to prevent memory leaks
+   */
+  destroy() {
+    // Remove canvas event listeners
+    if (this.canvas) {
+      this.canvas.removeEventListener('dragover', this._boundDragOver);
+      this.canvas.removeEventListener('drop', this._boundDrop);
+      this.canvas.removeEventListener('mousedown', this._boundMouseDown);
+    }
+
+    // Remove window event listeners
+    window.removeEventListener('mousemove', this._boundMouseMove);
+    window.removeEventListener('mouseup', this._boundMouseUp);
+
+    // Unsubscribe from store
+    if (this._boundUnsubscribe) {
+      this._boundUnsubscribe();
+    }
+
+    // Stop particle system
+    if (emberParticles) {
+      emberParticles.stop();
+    }
   }
 
   _subscribeToState() {
-    this.store.subscribe((state, prevState) => {
+    this._boundUnsubscribe = this.store.subscribe((state, prevState) => {
       const itemsChanged = JSON.stringify(state.scene.placedItems) !== 
                           JSON.stringify(prevState?.scene?.placedItems);
       const selectionChanged = state.scene.selectedItemId !== prevState?.scene?.selectedItemId;
@@ -153,11 +194,22 @@ export class CanvasController {
       this._drawPlaceholder(half, half, half, item.color);
     }
     
-    // Selection highlight
+    // Selection highlight — Ember glow effect
     if (isSelected) {
-      this.ctx.strokeStyle = '#2e7d32';
-      this.ctx.lineWidth = 3;
-      this.ctx.strokeRect(0, 0, size, size);
+      // Outer glow
+      this.ctx.shadowColor = '#d4520a';
+      this.ctx.shadowBlur = 20;
+      this.ctx.strokeStyle = '#ff7b2e';
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(-2, -2, size + 4, size + 4);
+      
+      // Reset shadow
+      this.ctx.shadowBlur = 0;
+      
+      // Inner highlight
+      this.ctx.strokeStyle = 'rgba(255, 123, 46, 0.5)';
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeRect(2, 2, size - 4, size - 4);
     }
     
     this.ctx.restore();
@@ -177,10 +229,23 @@ export class CanvasController {
     const center = PREVIEW_SIZE / 2;
     const radius = PREVIEW_SIZE * 0.25;
     
-    this.ctx.fillStyle = 'rgba(46, 125, 50, 0.15)';
+    // Ember-colored placeholder with glow
+    this.ctx.shadowColor = '#d4520a';
+    this.ctx.shadowBlur = 30;
+    this.ctx.fillStyle = 'rgba(212, 82, 10, 0.1)';
     this.ctx.beginPath();
     this.ctx.arc(center, center, radius, 0, Math.PI * 2);
     this.ctx.fill();
+    
+    // Reset shadow
+    this.ctx.shadowBlur = 0;
+    
+    // Inner ring
+    this.ctx.strokeStyle = 'rgba(212, 82, 10, 0.3)';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.arc(center, center, radius * 0.7, 0, Math.PI * 2);
+    this.ctx.stroke();
   }
 
   _handleDrop(e) {
@@ -249,7 +314,7 @@ export class CanvasController {
   _announce(message) {
     this.store.dispatch(
       Actions.announce(message),
-      require('../../core/state/reducers.js').rootReducer
+      this.reducers
     );
   }
 }

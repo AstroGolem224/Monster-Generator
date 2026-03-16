@@ -39,13 +39,13 @@ class MonsterGeneratorApp {
     this.sceneService.registerReducers(rootReducer);
     this.presetService.registerReducers(rootReducer);
 
-    // Initialize controllers
+    // Initialize controllers with reducers (dependency injection)
     this.controllers = {
-      picker: new PickerController(this.store, this.sceneService),
-      canvas: new CanvasController(this.store, this.sceneService),
-      toolbar: new ToolbarController(this.store, this.sceneService),
-      scaler: new ScalerPanelController(this.store, this.sceneService),
-      preset: new PresetPanelController(this.store, this.presetService, this.sceneService)
+      picker: new PickerController(this.store, this.sceneService, rootReducer),
+      canvas: new CanvasController(this.store, this.sceneService, rootReducer),
+      toolbar: new ToolbarController(this.store, this.sceneService, rootReducer),
+      scaler: new ScalerPanelController(this.store, this.sceneService, rootReducer),
+      preset: new PresetPanelController(this.store, this.presetService, this.sceneService, rootReducer)
     };
 
     // Track initialization

@@ -7,9 +7,10 @@ import { Actions } from '../../core/state/actions.js';
 import { assetLoader } from '../../infrastructure/assets/AssetLoader.js';
 
 export class PickerController {
-  constructor(store, sceneService) {
+  constructor(store, sceneService, reducers) {
     this.store = store;
     this.sceneService = sceneService;
+    this.reducers = reducers;
     
     // DOM elements
     this.tabsEl = document.getElementById('categoryTabs');
@@ -18,6 +19,10 @@ export class PickerController {
     
     // State
     this.activeCategoryId = 'body';
+    
+    // AbortController for thumbnail loading
+    this._abortController = null;
+    this._unsubscribe = null;
   }
 
   async init() {
@@ -75,14 +80,23 @@ export class PickerController {
       `;
     }).join('');
 
-    // Load images after rendering
+    // Load images after rendering with glow effect
     this._loadThumbnails(parts);
   }
 
   async _loadThumbnails(parts) {
+    // Cancel previous loading
+    if (this._abortController) {
+      this._abortController.abort();
+    }
+    this._abortController = new AbortController();
+    const signal = this._abortController.signal;
+    
     const thumbs = this.gridEl.querySelectorAll('.picker__tile-thumb');
     
     for (let i = 0; i < parts.length; i++) {
+      if (signal.aborted) return; // Check if cancelled
+      
       const part = parts[i];
       const thumb = thumbs[i];
       
@@ -90,18 +104,38 @@ export class PickerController {
 
       try {
         await assetLoader.load(part.assetUrl);
+        
+        if (signal.aborted) return; // Check again after await
+        
         const img = document.createElement('img');
         img.src = part.assetUrl;
         img.alt = '';
         img.className = 'picker__tile-img';
         img.draggable = false;
+        img.style.filter = 'drop-shadow(0 0 6px rgba(212, 82, 10, 0.4))';
         
         // Replace number with image
         thumb.innerHTML = '';
         thumb.appendChild(img);
       } catch (error) {
+        if (signal.aborted) return;
+        
         // Keep the colored placeholder with number
+        thumb.style.background = `linear-gradient(135deg, ${part.color}40, ${part.color}20)`;
+        thumb.style.border = `1px solid ${part.color}60`;
       }
+    }
+  }
+
+  /**
+   * Cleanup method
+   */
+  destroy() {
+    if (this._abortController) {
+      this._abortController.abort();
+    }
+    if (this._unsubscribe) {
+      this._unsubscribe();
     }
   }
 
@@ -156,7 +190,7 @@ export class PickerController {
   }
 
   _subscribeToState() {
-    this.store.subscribe((state) => {
+    this._unsubscribe = this.store.subscribe((state) => {
       const newCategoryId = state.ui.activeCategoryId;
       if (newCategoryId !== this.activeCategoryId) {
         this.activeCategoryId = newCategoryId;

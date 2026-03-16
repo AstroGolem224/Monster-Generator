@@ -5,10 +5,11 @@
 import { Actions } from '../../core/state/actions.js';
 
 export class PresetPanelController {
-  constructor(store, presetService, sceneService) {
+  constructor(store, presetService, sceneService, reducers) {
     this.store = store;
     this.presetService = presetService;
     this.sceneService = sceneService;
+    this.reducers = reducers;
     
     // Elements
     this.nameInput = document.getElementById('presetName');
@@ -137,7 +138,7 @@ export class PresetPanelController {
   _announce(message) {
     this.store.dispatch(
       Actions.announce(message),
-      require('../../core/state/reducers.js').rootReducer
+      this.reducers
     );
   }
 }

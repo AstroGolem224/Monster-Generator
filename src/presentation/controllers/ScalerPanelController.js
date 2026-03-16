@@ -5,9 +5,10 @@
 import { Actions } from '../../core/state/actions.js';
 
 export class ScalerPanelController {
-  constructor(store, sceneService) {
+  constructor(store, sceneService, reducers) {
     this.store = store;
     this.sceneService = sceneService;
+    this.reducers = reducers;
     
     // Elements
     this.panel = document.getElementById('scalerPanel');
@@ -151,7 +152,7 @@ export class ScalerPanelController {
   _announce(message) {
     this.store.dispatch(
       Actions.announce(message),
-      require('../../core/state/reducers.js').rootReducer
+      this.reducers
     );
   }
 }

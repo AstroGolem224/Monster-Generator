@@ -108,10 +108,11 @@ export class Store {
   undo() {
     if (this._historyPosition <= 0) return false;
     
+    const prevState = this._state;
     this._historyPosition--;
     const historyEntry = this._history[this._historyPosition];
     this._state = Object.freeze(this._deepClone(historyEntry.state));
-    this._notify(this._state);
+    this._notify(prevState);
     return true;
   }
 
@@ -122,10 +123,11 @@ export class Store {
   redo() {
     if (this._historyPosition >= this._history.length - 1) return false;
     
+    const prevState = this._state;
     this._historyPosition++;
     const historyEntry = this._history[this._historyPosition];
     this._state = Object.freeze(this._deepClone(historyEntry.state));
-    this._notify(this._state);
+    this._notify(prevState);
     return true;
   }
 

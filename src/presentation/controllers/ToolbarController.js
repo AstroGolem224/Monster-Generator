@@ -7,9 +7,10 @@ import { Actions } from '../../core/state/actions.js';
 import { partCatalog } from '../../domain/catalog/PartCatalog.js';
 
 export class ToolbarController {
-  constructor(store, sceneService) {
+  constructor(store, sceneService, reducers) {
     this.store = store;
     this.sceneService = sceneService;
+    this.reducers = reducers;
     
     // Buttons
     this.exportBtn = document.getElementById('exportBtn');
@@ -95,7 +96,7 @@ export class ToolbarController {
   _announce(message) {
     this.store.dispatch(
       Actions.announce(message),
-      require('../../core/state/reducers.js').rootReducer
+      this.reducers
     );
   }
 }
