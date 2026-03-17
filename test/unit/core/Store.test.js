@@ -132,8 +132,43 @@ describe('Store', () => {
       expect(store.getState().count).toBe(0);
     });
 
-    // Note: Redo functionality depends on history implementation details
-    // and is tested manually
+    it('should expose canUndo/canRedo history state', () => {
+      const reducers = {
+        INCREMENT: (draft) => { draft.count += 1; }
+      };
+
+      expect(store.canUndo()).toBe(false);
+      expect(store.canRedo()).toBe(false);
+
+      store.dispatch({ type: 'INCREMENT' }, reducers);
+
+      expect(store.canUndo()).toBe(true);
+      expect(store.canRedo()).toBe(false);
+
+      store.undo();
+
+      expect(store.canUndo()).toBe(false);
+      expect(store.canRedo()).toBe(true);
+      expect(store.getHistoryState()).toMatchObject({
+        canUndo: false,
+        canRedo: true,
+        total: 2,
+        position: 0
+      });
+    });
+
+    it('should redo previously undone change', () => {
+      const reducers = {
+        INCREMENT: (draft) => { draft.count += 1; }
+      };
+
+      store.dispatch({ type: 'INCREMENT' }, reducers);
+      store.undo();
+
+      const result = store.redo();
+      expect(result).toBe(true);
+      expect(store.getState().count).toBe(1);
+    });
 
     it('should return false when nothing to undo', () => {
       const result = store.undo();

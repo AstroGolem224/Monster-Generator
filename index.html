@@ -47,9 +47,12 @@
           </button>
         </div>
         <div class="preview__actions">
+          <button type="button" class="preview__btn preview__btn--secondary preview__btn--history" id="undoBtn" disabled aria-label="Letzte Aktion rückgängig machen">↶ Undo</button>
+          <button type="button" class="preview__btn preview__btn--secondary preview__btn--history" id="redoBtn" disabled aria-label="Zuletzt rückgängig gemachte Aktion wiederherstellen">↷ Redo</button>
           <button type="button" class="preview__btn preview__btn--random" id="randomBtn">Zufälliges Monster</button>
           <button type="button" class="preview__export" id="exportBtn">Als PNG herunterladen</button>
         </div>
+        <p id="historyStatus" class="preview__history-status" aria-live="polite">History 1/1</p>
         <div class="preview__presets" aria-label="Presets">
           <div class="presets__save">
             <label for="presetName" class="presets__label">Preset-Name</label>

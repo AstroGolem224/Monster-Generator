@@ -9,6 +9,7 @@ Web-basierter Avatar- und Profilbild-Generator mit süßen Monsterteilen.
 - **Spiegeln:** Horizontal und vertikal für das ausgewählte Teil; **Größe** 50–400 %
 - **Preview** (quadratisch mit abgerundeten Ecken) + **Export** als PNG (512×512 px)
 - **Presets** speichern/laden (gesamte Szene), **Zurücksetzen**
+- **Undo/Redo** direkt in der UI plus Tastatur-Shortcuts für schnelleres Iterieren
 - Design: Pastell-Grün-Verlauf, Titel „MONSTER GENERATOR“
 
 Ausführliche Anleitung: [docs/Monster_Generator_Manual.md](docs/Monster_Generator_Manual.md)
@@ -23,6 +24,11 @@ npm run dev
 **PowerShell:** Wenn „Ausführung von Skripts ist deaktiviert“ erscheint: entweder **Eingabeaufforderung (cmd)** nutzen, oder einmalig `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` in PowerShell ausführen (dann bestätigen).
 
 Build: `npm run build` → Ausgabe in `dist/`.
+
+Shortcuts:
+- `Ctrl/Cmd + S` → PNG exportieren
+- `Ctrl/Cmd + Z` → Undo
+- `Shift + Ctrl/Cmd + Z` oder `Ctrl/Cmd + Y` → Redo
 
 ## Ohne Node.js / npm
 

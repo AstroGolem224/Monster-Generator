@@ -599,6 +599,17 @@ body::after {
   flex-wrap: wrap;
   gap: var(--space-1);
   justify-content: center;
+  align-items: center;
+}
+
+.preview__history-status {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 /* Primary Button — Ember */
@@ -653,6 +664,10 @@ body::after {
   background: rgba(212, 82, 10, 0.1);
   border-color: var(--accent-ember);
   box-shadow: var(--glow-ember);
+}
+
+.preview__btn--history {
+  min-width: 110px;
 }
 
 /* Small Button */

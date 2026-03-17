@@ -102,7 +102,7 @@ export class Store {
     if (!this._isEqual(prevState, newState)) {
       this._state = Object.freeze(newState);
       this._notify(prevState);
-      this._addToHistory(prevState);
+      this._addToHistory(this._state);
       
       // Clear selector cache on state change
       this._selectorCache.clear();
@@ -188,6 +188,14 @@ export class Store {
   }
 
   /**
+   * Check whether an undo step is currently available
+   * @returns {boolean}
+   */
+  canUndo() {
+    return this._historyPosition > 0;
+  }
+
+  /**
    * Redo previously undone state change
    * @returns {boolean} Success
    */
@@ -201,6 +209,27 @@ export class Store {
     this._notify(prevState);
     this._selectorCache.clear();
     return true;
+  }
+
+  /**
+   * Check whether a redo step is currently available
+   * @returns {boolean}
+   */
+  canRedo() {
+    return this._historyPosition >= 0 && this._historyPosition < this._history.length - 1;
+  }
+
+  /**
+   * Get current history metadata for UI state
+   * @returns {{ position: number, total: number, canUndo: boolean, canRedo: boolean }}
+   */
+  getHistoryState() {
+    return {
+      position: this._historyPosition,
+      total: this._history.length,
+      canUndo: this.canUndo(),
+      canRedo: this.canRedo()
+    };
   }
 
   /**

@@ -42,6 +42,7 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
   - **Zufälliges Monster** – fügt ein zufälliges Teil hinzu.  
   - **Als PNG herunterladen** – speichert die aktuelle Szene als 512×512-PNG.
 - **Presets:** Aktuelle Szene (alle platzieren Teile mit Position, Größe, Drehung) unter einem Namen speichern, laden oder ein Preset löschen.
+- **Undo / Redo:** Zwei Buttons unter der Vorschau erlauben Rückgängig/Wiederholen. Ein kleiner History-Zähler zeigt den aktuellen Stand.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -71,6 +72,14 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 ### Zurücksetzen
 
 - **Zurücksetzen:** Entfernt **alle** Teile von der Anzeige und löscht die zuletzt gespeicherte Szene. Gespeicherte Presets bleiben erhalten.
+
+### Undo / Redo
+
+- **Undo:** Macht die letzte Änderung an der Szene rückgängig.
+- **Redo:** Stellt eine zuvor rückgängig gemachte Änderung wieder her.
+- Shortcuts:
+  - **Ctrl/Cmd + Z** → Undo
+  - **Shift + Ctrl/Cmd + Z** oder **Ctrl/Cmd + Y** → Redo
 
 ### PNG herunterladen
 
