@@ -15,6 +15,7 @@ Web-basierter Avatar- und Profilbild-Generator mit süßen Monsterteilen.
 - **Seeded Randomizer** mit Category Locks für reproduzierbare Monster-Varianten
 - **Snap-to-Grid & Symmetry Guides** plus schnelle Alignment-Buttons für präzise Platzierung
 - **Decor Layers** mit auswählbaren Hintergründen, Frames, Stickern und Nametags
+- **Mutate / Evolve / Corrupt / Bossify** für schnelle Monster-Varianten aus bestehenden Kreationen
 - Design: Pastell-Grün-Verlauf, Titel „MONSTER GENERATOR“
 
 Ausführliche Anleitung: [docs/Monster_Generator_Manual.md](docs/Monster_Generator_Manual.md)

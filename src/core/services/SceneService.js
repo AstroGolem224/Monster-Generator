@@ -52,6 +52,11 @@ export class SceneService {
     this._persist();
   }
 
+  updateItem(itemId, updates) {
+    this._dispatch(Actions.updateItem(itemId, updates));
+    this._persist();
+  }
+
   reorderItems(orderedIds) {
     this._dispatch(Actions.reorderItems(orderedIds));
     this._persist();

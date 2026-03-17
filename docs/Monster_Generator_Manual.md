@@ -49,6 +49,7 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - **Seeded Randomizer:** Erzeugt reproduzierbare Monster auf Basis eines Seeds. Gelockte Kategorien bleiben erhalten, ungelockte werden neu gewürfelt.
 - **Snap-to-Grid / Guides:** Präzisionsmodus zum Einrasten auf ein Raster sowie sichtbare Symmetrie-Linien.
 - **Decor Layers:** Hintergrund, Rahmen, Sticker und Nametag für social-media-taugliche Exporte.
+- **Mutate / Evolve / Corrupt / Bossify:** Erzeugt schnelle Varianten aus dem aktuellen Monster, inklusive neuer Teile, Transformationsänderungen und Decor-Anpassungen.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -117,6 +118,14 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - Im Decor-Panel kannst du einen **Background**, einen **Frame** und einen **Sticker-Layer** auswählen.
 - Über das Feld **Nametag / Title** gibst du deinem Monster einen kurzen Titel, der direkt im Export erscheint.
 - Diese Decor-Einstellungen werden zusammen mit dem Tool gespeichert und auch beim PNG-Export berücksichtigt.
+
+### Monster Evolution Workflow
+
+- **Mutate:** Verändert bestehende Teile leicht und baut überraschende Varianten.
+- **Evolve:** Entwickelt das aktuelle Monster weiter und ergänzt meist zusätzliche Teile.
+- **Corrupt:** Erzeugt aggressivere, chaotischere Varianten mit dunklerem Decor-Look.
+- **Bossify:** Macht aus dem Monster eine Boss-Version mit größeren Formen und dramatischerem Auftritt.
+- Die Evolution-Buttons arbeiten direkt auf der aktuellen Szene und sind ideal für schnelle Iterationen.
 
 ### Share Codes / Share Links
 
