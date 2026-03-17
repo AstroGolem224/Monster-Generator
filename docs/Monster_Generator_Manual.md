@@ -47,6 +47,7 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - **Ebenen-Panel:** Zeigt alle platzierten Teile, erlaubt Umbenennen, Auswählen sowie Z-Order-Steuerung per Buttons oder Drag-and-Drop.
 - **Share Codes / Links:** Exportiert eine komplette Monster-Szene in einen teilbaren Code oder Link, der direkt wieder importiert werden kann.
 - **Seeded Randomizer:** Erzeugt reproduzierbare Monster auf Basis eines Seeds. Gelockte Kategorien bleiben erhalten, ungelockte werden neu gewürfelt.
+- **Snap-to-Grid / Guides:** Präzisionsmodus zum Einrasten auf ein Raster sowie sichtbare Symmetrie-Linien.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -90,6 +91,13 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - Über das Eingabefeld im Ebenen-Panel kannst du dem ausgewählten Teil einen verständlichen Namen geben.
 - Mit **Ganz nach vorn / Nach vorn / Nach hinten / Ganz nach hinten** veränderst du die Z-Reihenfolge.
 - Zusätzlich kannst du Einträge per **Drag-and-Drop** in der Liste neu sortieren.
+
+### Präzisions-Tools
+
+- **Center X / Center Y:** Zentriert das ausgewählte Teil exakt horizontal oder vertikal.
+- **Snap Grid:** Beim Verschieben und Ablegen rasten Teile auf ein sichtbares Raster ein.
+- **Symmetry Guides:** Zeigt Mittellinien auf dem Canvas für symmetrisches Platzieren.
+- Die Präzisions-Buttons befinden sich im Panel des ausgewählten Teils.
 
 ### Zurücksetzen
 

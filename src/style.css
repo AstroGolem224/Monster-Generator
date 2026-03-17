@@ -641,8 +641,11 @@ body::after {
   box-shadow: var(--glow-ember);
 }
 
-.scaler-panel__mirror {
+.scaler-panel__mirror,
+.scaler-panel__align,
+.scaler-panel__precision {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
   margin-top: var(--space-1);
 }
