@@ -81,6 +81,29 @@ export const THEME = {
   accentGreenSoft: '#388e3c'
 };
 
+// Decorative options
+export const DECOR_BACKGROUNDS = [
+  { id: 'ember-glow', label: 'Ember Glow' },
+  { id: 'midnight', label: 'Midnight Void' },
+  { id: 'slime-lab', label: 'Slime Lab' },
+  { id: 'sunset', label: 'Sunset Candy' }
+];
+
+export const DECOR_FRAMES = [
+  { id: 'ember-frame', label: 'Ember Frame' },
+  { id: 'arcade', label: 'Arcade' },
+  { id: 'slime', label: 'Slime Border' },
+  { id: 'none', label: 'Kein Rahmen' }
+];
+
+export const DECOR_STICKERS = [
+  { id: 'none', label: 'Keine Sticker' },
+  { id: 'spark', label: 'Sparkles' },
+  { id: 'stars', label: 'Stars' },
+  { id: 'hearts', label: 'Hearts' },
+  { id: 'danger', label: 'Warning Tape' }
+];
+
 // Animation Durations (ms)
 export const ANIMATION = {
   fast: 150,

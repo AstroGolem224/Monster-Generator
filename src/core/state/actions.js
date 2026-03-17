@@ -24,6 +24,7 @@ export const ActionTypes = {
   UI_CATEGORY_SELECT: 'ui:category:select',
   UI_PANEL_TOGGLE: 'ui:panel:toggle',
   UI_ANNOUNCE: 'ui:announce',
+  UI_DECOR_UPDATE: 'ui:decor:update',
   
   // Preset Actions
   PRESET_SAVE: 'preset:save',
@@ -156,6 +157,12 @@ export const Actions = {
   announce: (message) => ({
     type: ActionTypes.UI_ANNOUNCE,
     payload: { message, timestamp: Date.now() }
+  }),
+
+  /** @param {Object} decorations */
+  updateDecorations: (decorations) => ({
+    type: ActionTypes.UI_DECOR_UPDATE,
+    payload: decorations
   }),
 
   // Preset Actions

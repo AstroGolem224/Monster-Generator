@@ -32,7 +32,14 @@ export const initialState = {
     panels: {
       scaler: false,
       layers: true,
-      share: true
+      share: true,
+      decor: true
+    },
+    decorations: {
+      background: 'ember-glow',
+      frame: 'ember-frame',
+      sticker: 'none',
+      title: ''
     },
     announcement: null,
     announcementTimestamp: null
@@ -197,6 +204,13 @@ function uiReducer(draft, action) {
       draft.announcementTimestamp = timestamp;
       break;
     }
+
+    case ActionTypes.UI_DECOR_UPDATE:
+      draft.decorations = {
+        ...draft.decorations,
+        ...action.payload
+      };
+      break;
 
     case ActionTypes.SCENE_ITEM_SELECT:
       draft.panels.scaler = action.payload.id !== null;

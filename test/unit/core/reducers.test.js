@@ -209,6 +209,18 @@ describe('Reducers', () => {
       expect(state.ui.announcementTimestamp).toBe(12345);
     });
 
+    it('should update decorative UI settings', () => {
+      const state = runReducer(initialState, {
+        type: ActionTypes.UI_DECOR_UPDATE,
+        payload: { background: 'midnight', frame: 'arcade', sticker: 'stars', title: 'Boss' }
+      });
+
+      expect(state.ui.decorations.background).toBe('midnight');
+      expect(state.ui.decorations.frame).toBe('arcade');
+      expect(state.ui.decorations.sticker).toBe('stars');
+      expect(state.ui.decorations.title).toBe('Boss');
+    });
+
     it('should handle UI_PANEL_TOGGLE', () => {
       const state = runReducer(initialState, {
         type: ActionTypes.UI_PANEL_TOGGLE,

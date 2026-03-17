@@ -799,6 +799,7 @@ body::after {
 
 .layers-panel,
 .preview__presets,
+.decor-panel,
 .share-panel {
   display: flex;
   flex-direction: column;
@@ -824,6 +825,7 @@ body::after {
 }
 
 .layers-panel__title,
+.decor-panel__title,
 .share-panel__title {
   font-family: var(--font-display);
   font-size: 1rem;
@@ -834,7 +836,9 @@ body::after {
 .presets__input,
 .presets__select,
 .presets__textarea,
-.share-panel__textarea {
+.share-panel__textarea,
+.decor-panel .presets__select,
+.decor-panel .presets__input {
   font-family: var(--font-sans);
   font-size: 0.9rem;
   padding: 10px 12px;

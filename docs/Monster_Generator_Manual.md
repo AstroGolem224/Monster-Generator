@@ -48,6 +48,7 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - **Share Codes / Links:** Exportiert eine komplette Monster-Szene in einen teilbaren Code oder Link, der direkt wieder importiert werden kann.
 - **Seeded Randomizer:** Erzeugt reproduzierbare Monster auf Basis eines Seeds. Gelockte Kategorien bleiben erhalten, ungelockte werden neu gewürfelt.
 - **Snap-to-Grid / Guides:** Präzisionsmodus zum Einrasten auf ein Raster sowie sichtbare Symmetrie-Linien.
+- **Decor Layers:** Hintergrund, Rahmen, Sticker und Nametag für social-media-taugliche Exporte.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -110,6 +111,12 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - Shortcuts:
   - **Ctrl/Cmd + Z** → Undo
   - **Shift + Ctrl/Cmd + Z** oder **Ctrl/Cmd + Y** → Redo
+
+### Decor Layers
+
+- Im Decor-Panel kannst du einen **Background**, einen **Frame** und einen **Sticker-Layer** auswählen.
+- Über das Feld **Nametag / Title** gibst du deinem Monster einen kurzen Titel, der direkt im Export erscheint.
+- Diese Decor-Einstellungen werden zusammen mit dem Tool gespeichert und auch beim PNG-Export berücksichtigt.
 
 ### Share Codes / Share Links
 

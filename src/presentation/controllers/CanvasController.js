@@ -138,7 +138,10 @@ export class CanvasController {
   async _render() {
     const items = this.store.select(state => state.scene.placedItems);
     const selectedId = this.store.select(state => state.scene.selectedItemId);
+    const decorations = this.store.select(state => state.ui.decorations);
     this._offscreenCtx.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+
+    this._drawDecorBackground(this._offscreenCtx, decorations);
 
     if (this.guidesEnabled) {
       this._drawPrecisionGuides(this._offscreenCtx);
@@ -149,6 +152,7 @@ export class CanvasController {
     
     if (!items || items.length === 0) {
       this._drawEmptyPlaceholder(this._offscreenCtx);
+      this._drawDecorOverlay(this._offscreenCtx, decorations);
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.ctx.drawImage(this._offscreenCanvas, 0, 0);
       return;
@@ -167,8 +171,54 @@ export class CanvasController {
       this._drawItem(this._offscreenCtx, item, cx, cy, baseHalf, img, item.id === selectedId);
     }
 
+    this._drawDecorOverlay(this._offscreenCtx, decorations);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.drawImage(this._offscreenCanvas, 0, 0);
+  }
+
+  _drawDecorBackground(ctx, decorations) {
+    switch (decorations?.background) {
+      case 'midnight': {
+        const g = ctx.createLinearGradient(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+        g.addColorStop(0, '#09111f');
+        g.addColorStop(1, '#1a2740');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+        break;
+      }
+      case 'slime-lab': {
+        const g = ctx.createLinearGradient(0, 0, 0, PREVIEW_SIZE);
+        g.addColorStop(0, '#112b1d');
+        g.addColorStop(1, '#59d67c');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+        break;
+      }
+      case 'sunset': {
+        const g = ctx.createLinearGradient(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+        g.addColorStop(0, '#ff8a5b');
+        g.addColorStop(0.5, '#ff4db8');
+        g.addColorStop(1, '#5b4bff');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+        break;
+      }
+      case 'ember-glow':
+      default: {
+        const g = ctx.createRadialGradient(PREVIEW_SIZE / 2, PREVIEW_SIZE / 2, PREVIEW_SIZE * 0.1, PREVIEW_SIZE / 2, PREVIEW_SIZE / 2, PREVIEW_SIZE * 0.8);
+        g.addColorStop(0, 'rgba(255,123,46,0.35)');
+        g.addColorStop(1, '#100f13');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+      }
+    }
+  }
+
+  _drawDecorOverlay(ctx, decorations) {
+    if (!decorations) return;
+    this._drawSticker(ctx, decorations.sticker);
+    this._drawFrame(ctx, decorations.frame);
+    this._drawTitle(ctx, decorations.title);
   }
 
   _drawGrid(ctx) {
@@ -238,6 +288,72 @@ export class CanvasController {
       ctx.strokeRect(2, 2, size - 4, size - 4);
     }
     
+    ctx.restore();
+  }
+
+  _drawFrame(ctx, frame) {
+    if (frame === 'none') return;
+    ctx.save();
+    switch (frame) {
+      case 'arcade':
+        ctx.strokeStyle = '#0de8f5';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(8, 8, PREVIEW_SIZE - 16, PREVIEW_SIZE - 16);
+        break;
+      case 'slime':
+        ctx.strokeStyle = '#7fffa1';
+        ctx.lineWidth = 12;
+        ctx.setLineDash([10, 8]);
+        ctx.strokeRect(10, 10, PREVIEW_SIZE - 20, PREVIEW_SIZE - 20);
+        break;
+      case 'ember-frame':
+      default:
+        ctx.strokeStyle = '#d4520a';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(8, 8, PREVIEW_SIZE - 16, PREVIEW_SIZE - 16);
+        ctx.strokeStyle = 'rgba(255, 180, 90, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(18, 18, PREVIEW_SIZE - 36, PREVIEW_SIZE - 36);
+        break;
+    }
+    ctx.restore();
+  }
+
+  _drawSticker(ctx, sticker) {
+    ctx.save();
+    ctx.font = `${Math.round(PREVIEW_SIZE * 0.08)}px sans-serif`;
+    switch (sticker) {
+      case 'spark':
+        ctx.fillText('✦', PREVIEW_SIZE * 0.12, PREVIEW_SIZE * 0.18);
+        ctx.fillText('✦', PREVIEW_SIZE * 0.8, PREVIEW_SIZE * 0.22);
+        break;
+      case 'stars':
+        ctx.fillText('★', PREVIEW_SIZE * 0.1, PREVIEW_SIZE * 0.16);
+        ctx.fillText('★', PREVIEW_SIZE * 0.82, PREVIEW_SIZE * 0.2);
+        ctx.fillText('★', PREVIEW_SIZE * 0.18, PREVIEW_SIZE * 0.86);
+        break;
+      case 'hearts':
+        ctx.fillText('❤', PREVIEW_SIZE * 0.1, PREVIEW_SIZE * 0.17);
+        ctx.fillText('❤', PREVIEW_SIZE * 0.82, PREVIEW_SIZE * 0.24);
+        break;
+      case 'danger':
+        ctx.fillStyle = 'rgba(255,214,10,0.9)';
+        ctx.fillRect(PREVIEW_SIZE * 0.04, PREVIEW_SIZE * 0.08, PREVIEW_SIZE * 0.3, PREVIEW_SIZE * 0.06);
+        ctx.fillRect(PREVIEW_SIZE * 0.66, PREVIEW_SIZE * 0.86, PREVIEW_SIZE * 0.3, PREVIEW_SIZE * 0.06);
+        break;
+    }
+    ctx.restore();
+  }
+
+  _drawTitle(ctx, title) {
+    if (!title) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(PREVIEW_SIZE * 0.12, PREVIEW_SIZE * 0.84, PREVIEW_SIZE * 0.76, PREVIEW_SIZE * 0.09);
+    ctx.fillStyle = '#f5e7c2';
+    ctx.font = `700 ${Math.round(PREVIEW_SIZE * 0.05)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(title.slice(0, 24), PREVIEW_SIZE / 2, PREVIEW_SIZE * 0.9);
     ctx.restore();
   }
 

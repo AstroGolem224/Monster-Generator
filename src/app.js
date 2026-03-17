@@ -23,6 +23,7 @@ import { ScalerPanelController } from './presentation/controllers/ScalerPanelCon
 import { LayersPanelController } from './presentation/controllers/LayersPanelController.js';
 import { PresetPanelController } from './presentation/controllers/PresetPanelController.js';
 import { SharePanelController } from './presentation/controllers/SharePanelController.js';
+import { DecorPanelController } from './presentation/controllers/DecorPanelController.js';
 
 /**
  * Main Application Class
@@ -49,6 +50,7 @@ class MonsterGeneratorApp {
       scaler: new ScalerPanelController(this.store, this.sceneService, rootReducer),
       layers: new LayersPanelController(this.store, this.sceneService, rootReducer),
       preset: new PresetPanelController(this.store, this.presetService, this.sceneService, rootReducer),
+      decor: new DecorPanelController(this.store, rootReducer),
       share: new SharePanelController(this.store, this.sceneService, rootReducer)
     };
 
@@ -111,6 +113,11 @@ class MonsterGeneratorApp {
         }
         console.log('[App] Loaded presets:', presetsData.presets.length);
       }
+
+      const settingsData = await localStorageAdapter.get(STORAGE_KEYS.SETTINGS);
+      if (settingsData?.decorations) {
+        this.store.dispatch(Actions.updateDecorations(settingsData.decorations), rootReducer);
+      }
     } catch (error) {
       console.error('[App] Failed to load saved data:', error);
     }
@@ -146,6 +153,10 @@ class MonsterGeneratorApp {
       // Persist presets
       await localStorageAdapter.set(STORAGE_KEYS.PRESETS, {
         presets: state.presets.items
+      });
+
+      await localStorageAdapter.set(STORAGE_KEYS.SETTINGS, {
+        decorations: state.ui.decorations
       });
     } catch (error) {
       console.error('[App] Persistence failed:', error);

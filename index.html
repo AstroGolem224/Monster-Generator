@@ -109,6 +109,17 @@
             <button type="button" class="preview__btn preview__btn--secondary" id="importPresetBtn">Preset importieren</button>
           </div>
         </div>
+        <section class="decor-panel" aria-label="Hintergründe, Rahmen und Sticker">
+          <p class="decor-panel__title">Decor Layers</p>
+          <label for="backgroundSelect" class="presets__label">Background</label>
+          <select id="backgroundSelect" class="presets__select"></select>
+          <label for="frameSelect" class="presets__label">Frame</label>
+          <select id="frameSelect" class="presets__select"></select>
+          <label for="stickerSelect" class="presets__label">Sticker</label>
+          <select id="stickerSelect" class="presets__select"></select>
+          <label for="titleInput" class="presets__label">Nametag / Title</label>
+          <input type="text" id="titleInput" class="presets__input" maxlength="24" placeholder="z. B. Boss Slime" />
+        </section>
         <div class="share-panel" aria-label="Monster teilen">
           <p class="share-panel__title">Monster Codes &amp; Share Links</p>
           <textarea id="shareCodeOutput" class="share-panel__textarea" readonly placeholder="Share-Code generieren"></textarea>

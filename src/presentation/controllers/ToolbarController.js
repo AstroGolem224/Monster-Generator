@@ -138,8 +138,9 @@ export class ToolbarController {
         return;
       }
 
+      const decorations = this.store.select(state => state.ui.decorations);
       const filename = `monster-${Date.now()}.png`;
-      await canvasExporter.download(items, filename);
+      await canvasExporter.download(items, filename, { decorations });
       this._announce('Bild heruntergeladen');
     } catch (error) {
       console.error('[ToolbarController] Export failed:', error);
