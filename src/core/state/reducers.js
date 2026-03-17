@@ -1,5 +1,5 @@
 import { ActionTypes } from './actions.js';
-import { createPlacedItem, updatePlacedItem } from '../entities/PlacedItem.js';
+import { createPlacedItem } from '../entities/PlacedItem.js';
 
 /**
  * @typedef {Object} MonsterGeneratorState
@@ -12,7 +12,7 @@ import { createPlacedItem, updatePlacedItem } from '../entities/PlacedItem.js';
  * @property {string | null} ui.announcement
  * @property {number | null} ui.announcementTimestamp
  * @property {Object} presets
- * @property {Array<{ name: string, items: Array, createdAt: number }>} presets.items
+ * @property {Array<{ name: string, items: Array, createdAt: number, updatedAt?: number }>} presets.items
  * @property {Object} assets
  * @property {Object.<string, 'loading' | 'loaded' | 'error'>} assets.status
  * @property {Object.<string, HTMLImageElement>} assets.cache
@@ -30,7 +30,9 @@ export const initialState = {
   ui: {
     activeCategoryId: 'body',
     panels: {
-      scaler: false
+      scaler: false,
+      layers: true,
+      share: true
     },
     announcement: null,
     announcementTimestamp: null
@@ -51,24 +53,12 @@ export const initialState = {
  * @param {Object} action
  */
 export function rootReducer(draft, action) {
-  // Scene reducer
   sceneReducer(draft.scene, action);
-  
-  // UI reducer
   uiReducer(draft.ui, action);
-  
-  // Presets reducer
   presetsReducer(draft.presets, action);
-  
-  // Assets reducer
   assetsReducer(draft.assets, action);
 }
 
-/**
- * Scene domain reducer - mutates draft directly (Immer)
- * @param {MonsterGeneratorState['scene']} draft
- * @param {Object} action
- */
 function sceneReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.SCENE_ITEM_ADD: {
@@ -95,6 +85,28 @@ function sceneReducer(draft, action) {
       const item = draft.placedItems.find(item => item.id === id);
       if (item) {
         Object.assign(item, updates);
+      }
+      break;
+    }
+
+    case ActionTypes.SCENE_ITEM_RENAME: {
+      const { id, label } = action.payload;
+      const item = draft.placedItems.find(entry => entry.id === id);
+      if (item) {
+        item.label = (label || '').trim() || item.label;
+      }
+      break;
+    }
+
+    case ActionTypes.SCENE_ITEMS_REORDER: {
+      const { orderedIds } = action.payload;
+      if (!Array.isArray(orderedIds) || orderedIds.length !== draft.placedItems.length) {
+        break;
+      }
+      const byId = new Map(draft.placedItems.map(item => [item.id, item]));
+      const reordered = orderedIds.map(id => byId.get(id)).filter(Boolean);
+      if (reordered.length === draft.placedItems.length) {
+        draft.placedItems = reordered;
       }
       break;
     }
@@ -156,37 +168,35 @@ function sceneReducer(draft, action) {
       break;
 
     case ActionTypes.SCENE_LOAD:
-    case ActionTypes.PRESET_LOAD:
+    case ActionTypes.PRESET_LOAD: {
       const { items } = action.payload;
-      draft.placedItems = Array.isArray(items) 
+      draft.placedItems = Array.isArray(items)
         ? items.map(item => createPlacedItem(item))
         : [];
       draft.selectedItemId = null;
       break;
+    }
   }
 }
 
-/**
- * UI domain reducer - mutates draft directly (Immer)
- * @param {MonsterGeneratorState['ui']} draft
- * @param {Object} action
- */
 function uiReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.UI_CATEGORY_SELECT:
       draft.activeCategoryId = action.payload.categoryId;
       break;
 
-    case ActionTypes.UI_PANEL_TOGGLE:
+    case ActionTypes.UI_PANEL_TOGGLE: {
       const { panelId, isOpen } = action.payload;
       draft.panels[panelId] = isOpen;
       break;
+    }
 
-    case ActionTypes.UI_ANNOUNCE:
+    case ActionTypes.UI_ANNOUNCE: {
       const { message, timestamp } = action.payload;
       draft.announcement = message;
       draft.announcementTimestamp = timestamp;
       break;
+    }
 
     case ActionTypes.SCENE_ITEM_SELECT:
       draft.panels.scaler = action.payload.id !== null;
@@ -194,11 +204,6 @@ function uiReducer(draft, action) {
   }
 }
 
-/**
- * Presets domain reducer - mutates draft directly (Immer)
- * @param {MonsterGeneratorState['presets']} draft
- * @param {Object} action
- */
 function presetsReducer(draft, action) {
   const MAX_PRESETS = 10;
 
@@ -206,16 +211,34 @@ function presetsReducer(draft, action) {
     case ActionTypes.PRESET_SAVE: {
       const { name, items, createdAt } = action.payload;
       const existingIndex = draft.items.findIndex(p => p.name === name);
-      
+      const nextPreset = {
+        name,
+        items,
+        createdAt,
+        updatedAt: Date.now()
+      };
+
       if (existingIndex >= 0) {
-        // Update existing
-        draft.items[existingIndex] = { name, items, createdAt };
+        draft.items[existingIndex] = {
+          ...draft.items[existingIndex],
+          ...nextPreset,
+          createdAt: draft.items[existingIndex].createdAt ?? createdAt
+        };
       } else {
-        // Add new, limit to MAX_PRESETS
-        draft.items.push({ name, items, createdAt });
+        draft.items.push(nextPreset);
         if (draft.items.length > MAX_PRESETS) {
           draft.items.shift();
         }
+      }
+      break;
+    }
+
+    case ActionTypes.PRESET_RENAME: {
+      const { oldName, newName } = action.payload;
+      const preset = draft.items.find(item => item.name === oldName);
+      if (preset) {
+        preset.name = newName;
+        preset.updatedAt = Date.now();
       }
       break;
     }
@@ -231,26 +254,23 @@ function presetsReducer(draft, action) {
   }
 }
 
-/**
- * Assets domain reducer - mutates draft directly (Immer)
- * @param {MonsterGeneratorState['assets']} draft
- * @param {Object} action
- */
 function assetsReducer(draft, action) {
   switch (action.type) {
     case ActionTypes.ASSET_LOAD_START:
       draft.status[action.payload.url] = 'loading';
       break;
 
-    case ActionTypes.ASSET_LOAD_SUCCESS:
+    case ActionTypes.ASSET_LOAD_SUCCESS: {
       const { url: successUrl, image } = action.payload;
       draft.status[successUrl] = 'loaded';
       draft.cache[successUrl] = image;
       break;
+    }
 
-    case ActionTypes.ASSET_LOAD_ERROR:
+    case ActionTypes.ASSET_LOAD_ERROR: {
       const { url: errorUrl } = action.payload;
       draft.status[errorUrl] = 'error';
       break;
+    }
   }
 }

@@ -153,6 +153,40 @@ describe('Reducers', () => {
 
       expect(state.scene.placedItems[0].flipH).toBe(true);
     });
+
+    it('should reorder scene items', () => {
+      let state = runReducer(initialState, {
+        type: ActionTypes.SCENE_ITEM_ADD,
+        payload: { categoryId: 'body', partId: 1, assetUrl: '/body.png', color: '#fff', x: 0.5, y: 0.5 }
+      });
+      state = runReducer(state, {
+        type: ActionTypes.SCENE_ITEM_ADD,
+        payload: { categoryId: 'head', partId: 2, assetUrl: '/head.png', color: '#aaa', x: 0.4, y: 0.4 }
+      });
+
+      const orderedIds = [state.scene.placedItems[1].id, state.scene.placedItems[0].id];
+      state = runReducer(state, {
+        type: ActionTypes.SCENE_ITEMS_REORDER,
+        payload: { orderedIds }
+      });
+
+      expect(state.scene.placedItems.map(item => item.id)).toEqual(orderedIds);
+    });
+
+    it('should rename a placed item label', () => {
+      let state = runReducer(initialState, {
+        type: ActionTypes.SCENE_ITEM_ADD,
+        payload: { categoryId: 'body', partId: 1, assetUrl: '/test.png', color: '#fff', x: 0.5, y: 0.5 }
+      });
+
+      const itemId = state.scene.placedItems[0].id;
+      state = runReducer(state, {
+        type: ActionTypes.SCENE_ITEM_RENAME,
+        payload: { id: itemId, label: 'Main Body' }
+      });
+
+      expect(state.scene.placedItems[0].label).toBe('Main Body');
+    });
   });
 
   describe('UI Reducer', () => {
@@ -235,6 +269,20 @@ describe('Reducers', () => {
       });
 
       expect(state.presets.items).toHaveLength(0);
+    });
+
+    it('should rename an existing preset', () => {
+      let state = runReducer(initialState, {
+        type: ActionTypes.PRESET_SAVE,
+        payload: { name: 'OldPreset', items: [], createdAt: Date.now() }
+      });
+
+      state = runReducer(state, {
+        type: ActionTypes.PRESET_RENAME,
+        payload: { oldName: 'OldPreset', newName: 'NewPreset' }
+      });
+
+      expect(state.presets.items[0].name).toBe('NewPreset');
     });
   });
 

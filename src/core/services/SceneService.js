@@ -2,8 +2,8 @@
  * Scene Service - Business logic for scene management
  */
 
-import { Actions, ActionTypes } from '../state/actions.js';
-import { createPlacedItem, updatePlacedItem, clonePlacedItem } from '../entities/PlacedItem.js';
+import { Actions } from '../state/actions.js';
+import { createPlacedItem, clonePlacedItem } from '../entities/PlacedItem.js';
 import { STORAGE_KEYS } from '../../config/constants.js';
 
 export class SceneService {
@@ -14,23 +14,13 @@ export class SceneService {
   constructor(store, storage) {
     this._store = store;
     this._storage = storage;
-    this._reducers = null; // Set by registerReducers
+    this._reducers = null;
   }
 
-  /**
-   * Register reducers with the store
-   * @param {Object} reducers
-   */
   registerReducers(reducers) {
     this._reducers = reducers;
   }
 
-  /**
-   * Add a new item to the scene
-   * @param {Object} partData
-   * @param {{ x: number, y: number }} [position]
-   * @returns {import('../entities/PlacedItem').PlacedItem}
-   */
   addItem(partData, position) {
     const item = createPlacedItem({
       ...partData,
@@ -40,46 +30,64 @@ export class SceneService {
 
     this._dispatch(Actions.addItem(item));
     this._persist();
-    
     return item;
   }
 
-  /**
-   * Remove an item from the scene
-   * @param {string} itemId
-   */
   removeItem(itemId) {
     this._dispatch(Actions.removeItem(itemId));
     this._persist();
   }
 
-  /**
-   * Move an item to a new position
-   * @param {string} itemId
-   * @param {{ x: number, y: number }} position
-   */
   moveItem(itemId, position) {
     this._dispatch(Actions.moveItem(itemId, position));
     this._persist();
   }
 
-  /**
-   * Select an item
-   * @param {string | null} itemId
-   */
   selectItem(itemId) {
     this._dispatch(Actions.selectItem(itemId));
   }
 
-  /**
-   * Update item transforms
-   * @param {string} itemId
-   * @param {Object} transforms
-   * @param {number} [transforms.scale]
-   * @param {number} [transforms.rotation]
-   * @param {boolean} [transforms.flipH]
-   * @param {boolean} [transforms.flipV]
-   */
+  renameItem(itemId, label) {
+    this._dispatch(Actions.renameItem(itemId, label));
+    this._persist();
+  }
+
+  reorderItems(orderedIds) {
+    this._dispatch(Actions.reorderItems(orderedIds));
+    this._persist();
+  }
+
+  moveItemLayer(itemId, direction) {
+    const items = [...this.getAllItems()];
+    const index = items.findIndex(item => item.id === itemId);
+    if (index === -1) return false;
+
+    let targetIndex = index;
+    switch (direction) {
+      case 'front':
+        targetIndex = Math.min(items.length - 1, index + 1);
+        break;
+      case 'back':
+        targetIndex = Math.max(0, index - 1);
+        break;
+      case 'top':
+        targetIndex = items.length - 1;
+        break;
+      case 'bottom':
+        targetIndex = 0;
+        break;
+      default:
+        return false;
+    }
+
+    if (targetIndex === index) return false;
+
+    const [moved] = items.splice(index, 1);
+    items.splice(targetIndex, 0, moved);
+    this.reorderItems(items.map(item => item.id));
+    return true;
+  }
+
   updateTransforms(itemId, transforms) {
     if (transforms.scale !== undefined) {
       this._dispatch(Actions.setScale(itemId, transforms.scale));
@@ -100,36 +108,21 @@ export class SceneService {
     this._persist();
   }
 
-  /**
-   * Toggle horizontal flip
-   * @param {string} itemId
-   */
   toggleFlipH(itemId) {
     this._dispatch(Actions.toggleFlipH(itemId));
     this._persist();
   }
 
-  /**
-   * Toggle vertical flip
-   * @param {string} itemId
-   */
   toggleFlipV(itemId) {
     this._dispatch(Actions.toggleFlipV(itemId));
     this._persist();
   }
 
-  /**
-   * Clear the entire scene
-   */
   clear() {
     this._dispatch(Actions.clearScene());
     this._persist();
   }
 
-  /**
-   * Load scene from storage
-   * @returns {Promise<boolean>}
-   */
   async loadFromStorage() {
     try {
       const data = await this._storage.get(STORAGE_KEYS.SCENE);
@@ -144,63 +137,38 @@ export class SceneService {
     }
   }
 
-  /**
-   * Save scene to storage
-   * @returns {Promise<void>}
-   */
   async saveToStorage() {
     return this._persist();
   }
 
-  /**
-   * Get currently selected item
-   * @returns {import('../entities/PlacedItem').PlacedItem | null}
-   */
   getSelectedItem() {
     const selectedId = this._store.select(state => state.scene.selectedItemId);
     if (!selectedId) return null;
     return this._getItem(selectedId);
   }
 
-  /**
-   * Get all placed items
-   * @returns {Array<import('../entities/PlacedItem').PlacedItem>}
-   */
   getAllItems() {
     return this._store.select(state => state.scene.placedItems);
   }
 
-  /**
-   * Check if item exists
-   * @param {string} itemId
-   * @returns {boolean}
-   */
   hasItem(itemId) {
     return this._getItem(itemId) !== undefined;
   }
 
-  /**
-   * Clone an existing item
-   * @param {string} itemId
-   * @param {{ x?: number, y?: number }} [offset]
-   * @returns {import('../entities/PlacedItem').PlacedItem | null}
-   */
   cloneItem(itemId, offset = { x: 0.05, y: 0.05 }) {
     const item = this._getItem(itemId);
     if (!item) return null;
 
     const cloned = clonePlacedItem(item, {
       x: Math.min(1, item.x + offset.x),
-      y: Math.min(1, item.y + offset.y)
+      y: Math.min(1, item.y + offset.y),
+      label: `${item.label || 'Teil'} Kopie`
     });
 
     this._dispatch(Actions.addItem(cloned));
     this._persist();
-    
     return cloned;
   }
-
-  // Private methods
 
   _dispatch(action) {
     if (!this._reducers) {
@@ -210,7 +178,7 @@ export class SceneService {
   }
 
   _getItem(itemId) {
-    return this._store.select(state => 
+    return this._store.select(state =>
       state.scene.placedItems.find(item => item.id === itemId)
     );
   }

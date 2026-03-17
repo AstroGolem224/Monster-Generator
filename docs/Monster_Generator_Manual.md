@@ -42,7 +42,10 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
   - **Zufälliges Monster** – fügt ein zufälliges Teil hinzu.  
   - **Als PNG herunterladen** – speichert die aktuelle Szene als 512×512-PNG.
 - **Presets:** Aktuelle Szene (alle platzieren Teile mit Position, Größe, Drehung) unter einem Namen speichern, laden oder ein Preset löschen.
+- **Preset-Galerie:** Gespeicherte Presets werden zusätzlich als Karten mit Mini-Vorschau angezeigt. Ein Klick wählt ein Preset aus, ein Doppelklick lädt es direkt.
 - **Undo / Redo:** Zwei Buttons unter der Vorschau erlauben Rückgängig/Wiederholen. Ein kleiner History-Zähler zeigt den aktuellen Stand.
+- **Ebenen-Panel:** Zeigt alle platzierten Teile, erlaubt Umbenennen, Auswählen sowie Z-Order-Steuerung per Buttons oder Drag-and-Drop.
+- **Share Codes / Links:** Exportiert eine komplette Monster-Szene in einen teilbaren Code oder Link, der direkt wieder importiert werden kann.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -68,6 +71,19 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - **Preset speichern:** Namen eingeben und **Speichern** klicken. Die **gesamte Szene** (alle platzieren Teile inkl. Position, Größe, Drehung) wird unter diesem Namen gespeichert.
 - **Preset laden:** Ein Preset in der Liste wählen und **Laden** klicken – die Anzeige wird durch diese Szene ersetzt.
 - **Preset löschen:** Preset auswählen und **Löschen** klicken.
+- **Preset umbenennen:** Ein Preset auswählen und auf **Umbenennen** klicken.
+- **Preset duplizieren:** Ein Preset auswählen und **Duplizieren** klicken, um eine Variante zu erzeugen.
+- **Preset JSON:** Ein Preset kann als JSON exportiert und später wieder importiert werden.
+- **Preset-Galerie:** Unter der Formularsteuerung siehst du gespeicherte Presets als Karten mit Thumbnail-Vorschau.
+
+### Ebenen
+
+- Die Ebenenliste zeigt alle platzierten Teile in ihrer aktuellen Zeichenreihenfolge.
+- **Oben in der Liste = weiter vorne im Bild.**
+- Ein Klick auf einen Eintrag wählt das Teil aus.
+- Über das Eingabefeld im Ebenen-Panel kannst du dem ausgewählten Teil einen verständlichen Namen geben.
+- Mit **Ganz nach vorn / Nach vorn / Nach hinten / Ganz nach hinten** veränderst du die Z-Reihenfolge.
+- Zusätzlich kannst du Einträge per **Drag-and-Drop** in der Liste neu sortieren.
 
 ### Zurücksetzen
 
@@ -80,6 +96,14 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - Shortcuts:
   - **Ctrl/Cmd + Z** → Undo
   - **Shift + Ctrl/Cmd + Z** oder **Ctrl/Cmd + Y** → Redo
+
+### Share Codes / Share Links
+
+- **Share-Code erzeugen:** Erstellt einen kompakten Code für die aktuelle Monster-Szene.
+- **Code kopieren:** Kopiert den erzeugten Share-Code in die Zwischenablage.
+- **Link kopieren:** Erstellt einen direkten Link mit eingebettetem Monster-Code in der URL.
+- **Monster aus Code laden:** Lädt eine Szene aus einem eingefügten Share-Code.
+- Wenn du einen Share-Link öffnest, versucht die App automatisch, das Monster aus der URL zu laden.
 
 ### PNG herunterladen
 

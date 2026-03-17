@@ -8,8 +8,10 @@ Web-basierter Avatar- und Profilbild-Generator mit süßen Monsterteilen.
 - **Teil löschen:** Ausgewähltes Teil per **Trash-Button** im Panel entfernen
 - **Spiegeln:** Horizontal und vertikal für das ausgewählte Teil; **Größe** 50–400 %
 - **Preview** (quadratisch mit abgerundeten Ecken) + **Export** als PNG (512×512 px)
-- **Presets** speichern/laden (gesamte Szene), **Zurücksetzen**
+- **Presets** speichern/laden (gesamte Szene), **Galerie mit Thumbnails**, Umbenennen, Duplizieren, JSON Import/Export
 - **Undo/Redo** direkt in der UI plus Tastatur-Shortcuts für schnelleres Iterieren
+- **Ebenen-Panel** mit Drag-and-Drop-Reihenfolge, Benennen und Z-Order-Steuerung
+- **Share Codes & Links** zum Exportieren und Laden kompletter Monster-Szenen
 - Design: Pastell-Grün-Verlauf, Titel „MONSTER GENERATOR“
 
 Ausführliche Anleitung: [docs/Monster_Generator_Manual.md](docs/Monster_Generator_Manual.md)
@@ -29,6 +31,11 @@ Shortcuts:
 - `Ctrl/Cmd + S` → PNG exportieren
 - `Ctrl/Cmd + Z` → Undo
 - `Shift + Ctrl/Cmd + Z` oder `Ctrl/Cmd + Y` → Redo
+
+Neu in der UI:
+- Ebenenliste zum Umbenennen und Umsortieren von Teilen
+- Preset-Galerie mit Thumbnail-Vorschauen
+- Share-Code-/Share-Link-Export für komplette Monster
 
 ## Ohne Node.js / npm
 

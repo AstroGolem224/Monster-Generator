@@ -9,6 +9,8 @@ export const ActionTypes = {
   SCENE_ITEM_UPDATE: 'scene:item:update',
   SCENE_ITEM_SELECT: 'scene:item:select',
   SCENE_ITEM_MOVE: 'scene:item:move',
+  SCENE_ITEM_RENAME: 'scene:item:rename',
+  SCENE_ITEMS_REORDER: 'scene:items:reorder',
   SCENE_CLEAR: 'scene:clear',
   SCENE_LOAD: 'scene:load',
   
@@ -27,6 +29,7 @@ export const ActionTypes = {
   PRESET_SAVE: 'preset:save',
   PRESET_LOAD: 'preset:load',
   PRESET_DELETE: 'preset:delete',
+  PRESET_RENAME: 'preset:rename',
   
   // Asset Actions
   ASSET_LOAD_START: 'asset:load:start',
@@ -73,6 +76,23 @@ export const Actions = {
   moveItem: (itemId, position) => ({
     type: ActionTypes.SCENE_ITEM_MOVE,
     payload: { id: itemId, position }
+  }),
+
+  /**
+   * @param {string} itemId
+   * @param {string} label
+   */
+  renameItem: (itemId, label) => ({
+    type: ActionTypes.SCENE_ITEM_RENAME,
+    payload: { id: itemId, label }
+  }),
+
+  /**
+   * @param {Array<string>} orderedIds
+   */
+  reorderItems: (orderedIds) => ({
+    type: ActionTypes.SCENE_ITEMS_REORDER,
+    payload: { orderedIds }
   }),
 
   clearScene: () => ({
@@ -161,6 +181,15 @@ export const Actions = {
   deletePreset: (name) => ({
     type: ActionTypes.PRESET_DELETE,
     payload: { name }
+  }),
+
+  /**
+   * @param {string} oldName
+   * @param {string} newName
+   */
+  renamePreset: (oldName, newName) => ({
+    type: ActionTypes.PRESET_RENAME,
+    payload: { oldName, newName }
   }),
 
   // Asset Actions

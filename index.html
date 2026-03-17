@@ -46,6 +46,19 @@
             Teil löschen
           </button>
         </div>
+        <section id="layersPanel" class="layers-panel" aria-label="Ebenen verwalten">
+          <div class="layers-panel__header">
+            <p class="layers-panel__title">Ebenen</p>
+            <input type="text" id="layerNameInput" class="layers-panel__name-input" placeholder="Name des ausgewählten Teils" disabled />
+          </div>
+          <div class="layers-panel__controls">
+            <button type="button" class="preview__btn preview__btn--secondary preview__btn--small" id="layerMoveTopBtn">Ganz nach vorn</button>
+            <button type="button" class="preview__btn preview__btn--secondary preview__btn--small" id="layerMoveUpBtn">Nach vorn</button>
+            <button type="button" class="preview__btn preview__btn--secondary preview__btn--small" id="layerMoveDownBtn">Nach hinten</button>
+            <button type="button" class="preview__btn preview__btn--secondary preview__btn--small" id="layerMoveBottomBtn">Ganz nach hinten</button>
+          </div>
+          <ul id="layersList" class="layers-panel__list"></ul>
+        </section>
         <div class="preview__actions">
           <button type="button" class="preview__btn preview__btn--secondary preview__btn--history" id="undoBtn" disabled aria-label="Letzte Aktion rückgängig machen">↶ Undo</button>
           <button type="button" class="preview__btn preview__btn--secondary preview__btn--history" id="redoBtn" disabled aria-label="Zuletzt rückgängig gemachte Aktion wiederherstellen">↷ Redo</button>
@@ -67,8 +80,28 @@
             <div class="presets__load-btns">
               <button type="button" class="preview__btn" id="loadPresetBtn">Preset laden</button>
               <button type="button" class="preview__btn preview__btn--secondary" id="deletePresetBtn">Preset löschen</button>
+              <button type="button" class="preview__btn preview__btn--secondary" id="renamePresetBtn">Umbenennen</button>
+              <button type="button" class="preview__btn preview__btn--secondary" id="duplicatePresetBtn">Duplizieren</button>
+              <button type="button" class="preview__btn preview__btn--secondary" id="exportPresetBtn">Preset JSON</button>
             </div>
           </div>
+          <div id="presetGallery" class="preset-gallery" aria-label="Preset-Galerie"></div>
+          <div class="presets__import">
+            <label for="presetImportTextarea" class="presets__label">Preset JSON importieren / exportieren</label>
+            <textarea id="presetImportTextarea" class="presets__textarea" placeholder="Preset-JSON hier einfügen oder exportiertes JSON anzeigen"></textarea>
+            <button type="button" class="preview__btn preview__btn--secondary" id="importPresetBtn">Preset importieren</button>
+          </div>
+        </div>
+        <div class="share-panel" aria-label="Monster teilen">
+          <p class="share-panel__title">Monster Codes &amp; Share Links</p>
+          <textarea id="shareCodeOutput" class="share-panel__textarea" readonly placeholder="Share-Code generieren"></textarea>
+          <div class="share-panel__actions">
+            <button type="button" class="preview__btn" id="generateShareCodeBtn">Share-Code erzeugen</button>
+            <button type="button" class="preview__btn preview__btn--secondary" id="copyShareCodeBtn">Code kopieren</button>
+            <button type="button" class="preview__btn preview__btn--secondary" id="copyShareLinkBtn">Link kopieren</button>
+          </div>
+          <textarea id="shareCodeInput" class="share-panel__textarea" placeholder="Share-Code einfügen"></textarea>
+          <button type="button" class="preview__btn preview__btn--secondary" id="loadShareCodeBtn">Monster aus Code laden</button>
         </div>
         <button type="button" class="preview__btn preview__btn--secondary" id="resetBtn">Zurücksetzen</button>
       </section>

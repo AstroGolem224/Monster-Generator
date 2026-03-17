@@ -20,7 +20,9 @@ import { PickerController } from './presentation/controllers/PickerController.js
 import { CanvasController } from './presentation/controllers/CanvasController.js';
 import { ToolbarController } from './presentation/controllers/ToolbarController.js';
 import { ScalerPanelController } from './presentation/controllers/ScalerPanelController.js';
+import { LayersPanelController } from './presentation/controllers/LayersPanelController.js';
 import { PresetPanelController } from './presentation/controllers/PresetPanelController.js';
+import { SharePanelController } from './presentation/controllers/SharePanelController.js';
 
 /**
  * Main Application Class
@@ -45,7 +47,9 @@ class MonsterGeneratorApp {
       canvas: new CanvasController(this.store, this.sceneService, rootReducer),
       toolbar: new ToolbarController(this.store, this.sceneService, rootReducer),
       scaler: new ScalerPanelController(this.store, this.sceneService, rootReducer),
-      preset: new PresetPanelController(this.store, this.presetService, this.sceneService, rootReducer)
+      layers: new LayersPanelController(this.store, this.sceneService, rootReducer),
+      preset: new PresetPanelController(this.store, this.presetService, this.sceneService, rootReducer),
+      share: new SharePanelController(this.store, this.sceneService, rootReducer)
     };
 
     // Track initialization
