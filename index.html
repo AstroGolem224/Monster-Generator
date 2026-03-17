@@ -22,7 +22,16 @@
     <main class="main" role="main">
       <aside class="picker" aria-label="Monsterteile auswählen">
         <div class="picker__tabs" id="categoryTabs" role="tablist"></div>
-        <button type="button" class="picker__random" id="randomBtnPicker" aria-label="Zufälliges Monster erstellen">Zufall</button>
+        <div class="picker__locks" id="categoryLocks" aria-label="Kategorie-Sperren"></div>
+        <div class="picker__seed-tools" aria-label="Seeded Randomizer">
+          <label class="picker__seed-label" for="seedInput">Seed</label>
+          <input type="text" id="seedInput" class="picker__seed-input" placeholder="z. B. DRUID-001" />
+          <div class="picker__seed-actions">
+            <button type="button" class="picker__random" id="randomBtnPicker" aria-label="Zufälliges Monster mit Seed erzeugen">Seed-Randomizer</button>
+            <button type="button" class="preview__btn preview__btn--secondary preview__btn--small" id="newSeedBtn">Neuer Seed</button>
+          </div>
+          <p class="picker__seed-hint">Gelockte Kategorien bleiben erhalten. Ungelockte Kategorien werden deterministisch über den Seed neu gewürfelt.</p>
+        </div>
         <div class="picker__grid" id="partsGrid"></div>
       </aside>
       <section class="preview" aria-label="Monster-Vorschau">

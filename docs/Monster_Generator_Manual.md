@@ -46,6 +46,7 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - **Undo / Redo:** Zwei Buttons unter der Vorschau erlauben Rückgängig/Wiederholen. Ein kleiner History-Zähler zeigt den aktuellen Stand.
 - **Ebenen-Panel:** Zeigt alle platzierten Teile, erlaubt Umbenennen, Auswählen sowie Z-Order-Steuerung per Buttons oder Drag-and-Drop.
 - **Share Codes / Links:** Exportiert eine komplette Monster-Szene in einen teilbaren Code oder Link, der direkt wieder importiert werden kann.
+- **Seeded Randomizer:** Erzeugt reproduzierbare Monster auf Basis eines Seeds. Gelockte Kategorien bleiben erhalten, ungelockte werden neu gewürfelt.
 - **Zurücksetzen** – entfernt alle Teile von der Anzeige und leert die gespeicherte Szene.
 
 ### Monster bauen
@@ -62,9 +63,14 @@ Der Monster Generator ist eine Web-App, mit der du aus vorgegebenen Monsterteile
 - Kacheln mit **Nummer** (und Farbe) = Platzhalter, weil die Datei fehlt oder noch nicht geladen ist.
 - Du kannst alle Kacheln ziehen; fehlende Assets erscheinen auf der Anzeige als farbiger Platzhalter.
 
-### Zufalls-Monster
+### Seeded Randomizer
 
-- **Zufall** / **Zufälliges Monster:** Fügt **ein** zufälliges Teil (aus einer zufälligen Kategorie) in der **Mitte** der Anzeige hinzu. Du kannst danach weiter Teile hinzufügen, verschieben und anpassen.
+- Oben im Picker findest du jetzt ein **Seed-Feld** und Lock-Buttons für jede Kategorie.
+- **Lock (🔒):** Diese Kategorie bleibt beim Seed-Randomizer unverändert.
+- **Unlock (🔓):** Diese Kategorie darf neu gewürfelt werden.
+- **Seed-Randomizer:** Nutzt den aktuellen Seed, um für alle ungelockten Kategorien deterministisch neue Teile zu wählen.
+- Mit **Neuer Seed** erzeugst du schnell eine neue reproduzierbare Variante.
+- Derselbe Seed erzeugt bei denselben Lock-Einstellungen dieselbe Monster-Konfiguration.
 
 ### Presets
 

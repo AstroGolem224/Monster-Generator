@@ -321,7 +321,64 @@ body::after {
   box-shadow: 0 0 0 2px rgba(212, 82, 10, 0.5);
 }
 
-/* Random Button */
+/* Randomizer & Seed Tools */
+.picker__locks,
+.picker__seed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.picker__lock {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.picker__lock[data-locked="true"] {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  box-shadow: 0 0 0 1px rgba(201, 151, 42, 0.15);
+}
+
+.picker__seed-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+}
+
+.picker__seed-label,
+.picker__seed-hint {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.picker__seed-input {
+  width: 100%;
+  min-height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  padding: 10px 12px;
+}
+
+.picker__seed-input:focus {
+  outline: none;
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 0 2px rgba(212, 82, 10, 0.2);
+}
+
 .picker__random {
   font-family: var(--font-mono);
   font-size: 0.75rem;
