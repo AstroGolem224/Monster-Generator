@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Store, createSelector } from '../../../src/core/state/Store.js';
+import { rootReducer, initialState } from '../../../src/core/state/reducers.js';
+import { Actions } from '../../../src/core/state/actions.js';
 
 describe('Store', () => {
   let store;
@@ -59,6 +61,33 @@ describe('Store', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith('[Store] No reducer for action: UNKNOWN');
       consoleSpy.mockRestore();
+    });
+
+    it('should support root reducer functions used by the app', () => {
+      const appStore = new Store(initialState);
+      appStore.enableHistory(10);
+
+      appStore.dispatch(
+        Actions.addItem({
+          id: 'test-item',
+          categoryId: 'body',
+          partId: 0,
+          assetUrl: '/assets/parts/body/body_1.png',
+          color: '#ffffff',
+          x: 0.5,
+          y: 0.5,
+          scale: 1,
+          rotation: 0,
+          flipH: false,
+          flipV: false,
+          label: 'Body 1'
+        }),
+        rootReducer
+      );
+
+      expect(appStore.getState().scene.placedItems).toHaveLength(1);
+      expect(appStore.getState().scene.selectedItemId).toBe('test-item');
+      expect(appStore.canUndo()).toBe(true);
     });
   });
 

@@ -86,16 +86,22 @@ export class Store {
    */
   dispatch(action, reducers) {
     const prevState = this._state;
-    const reducer = reducers[action.type];
+    const reducer = typeof reducers === 'function'
+      ? reducers
+      : reducers?.[action.type];
     
     if (!reducer) {
       console.warn(`[Store] No reducer for action: ${action.type}`);
       return;
     }
 
-    // Use Immer for immutable updates with structural sharing
+    // Support both a reducer map ({ TYPE: fn }) and a root reducer function
     const newState = produce(prevState, (draft) => {
-      reducer(draft, action.payload);
+      if (typeof reducers === 'function') {
+        reducer(draft, action);
+      } else {
+        reducer(draft, action.payload);
+      }
     });
     
     // Only update if state actually changed (shallow check first)
